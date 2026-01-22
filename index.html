@@ -43,7 +43,6 @@
 
       document.on("ready", () => {
         const elemWebView = document.$("webview");
-        Window.this.state = Window.WINDOW_SHOWN;
 
         // ===== Bridge: WebView -> Sciter =====
         elemWebView.jsBridgeCall = (params) => {
@@ -84,14 +83,38 @@
                 return JSON.stringify({ ok: true });
 
               case "template:onSize": {
-                // payload: { width, height }
+                // payload: { width, height } from WebView template (.card)
                 console.log("template size:", payload);
 
-                // OPTIONAL: если хочешь автоподгон окна под card —
-                // включи и поправь формулу под свои dip/padding/рамки
-                // const w = Math.max(200, payload?.width || 0);
-                // const h = Math.max(200, payload?.height || 0);
-                // Window.this.box("rect", { width: w + 40, height: h + 40 });
+                const dimension = Window.this.screenBox(
+                  "workarea",
+                  "dimension",
+                  true,
+                );
+                const [screenW, screenH] = dimension;
+
+                // Пришедшие размеры карточки (px). Делаем safety.
+                let w = Math.max(200, Number(payload?.width) || 0);
+                let h = Math.max(120, Number(payload?.height) || 0);
+
+                // ===== offsets / margins (подгони под себя) =====
+                const margin = 12; // отступ от края workarea
+                const framePad = 0; // если нужно добавить рамку/тень/паддинги окна
+                w = w + framePad;
+                h = h + framePad;
+
+                // bottom-right positioning
+                let x = screenW - w - margin;
+                let y = screenH - h - margin;
+
+                // clamp (на случай если контент больше экрана)
+                if (x < margin) x = margin;
+                if (y < margin) y = margin;
+
+                console.log(`move: x=${x} y=${y} w=${w} h=${h}`);
+
+                Window.this.move(x, y, w, h);
+                Window.this.state = Window.WINDOW_SHOWN;
 
                 return JSON.stringify({ ok: true });
               }
