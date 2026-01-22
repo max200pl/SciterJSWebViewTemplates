@@ -1,0 +1,226 @@
+export const templateHtml = `
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Template</title>
+
+    <style>
+      body {
+        font-family: system-ui;
+        padding: 16px;
+        color: white;
+        background: green;
+        color: black;
+      }
+      .card {
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 16px;
+        color: black;
+        width: 420px;
+        min-height: 420px;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      button {
+        padding: 10px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #efefef;
+        font-size: 12px;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: #10b04a;
+      }
+      .title {
+        margin: 0;
+        color: black;
+      }
+      .subtitle {
+        margin: 0;
+        font-size: 14px;
+        color: #333;
+      }
+      pre {
+        background: #f6f6f6;
+        padding: 10px;
+        border-radius: 10px;
+        white-space: pre-wrap;
+        font-size: 12px;
+        flex: 1;
+        overflow: auto;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="card">
+      <h3 class="title" id="header"></h3>
+
+      <div class="badge">
+        <span class="dot" id="dot"></span>
+        <span id="counterLabel"></span>
+        <b id="counter">0</b>
+      </div>
+
+      <p class="subtitle" id="subtitle"></p>
+
+      <div class="row">
+        <button id="switchLang">Switch language</button>
+        <button id="applyPayload">Apply payload</button>
+      </div>
+
+      <div class="row">
+        <button id="closeWebview">Close WebView</button>
+        <button id="cta">CTA</button>
+      </div>
+
+      <pre id="out">(logs)</pre>
+    </div>
+
+    <script>
+      const out = document.getElementById("out");
+      const headerEl = document.getElementById("header");
+      const subtitleEl = document.getElementById("subtitle");
+      const counterEl = document.getElementById("counter");
+      const counterLabelEl = document.getElementById("counterLabel");
+      const dotEl = document.getElementById("dot");
+
+      const i18n = {
+        en: {
+          title: "Program removed: {programName}",
+          subtitle: "Leftover files: {count}",
+          counter: "Live counter",
+          switch: "Switch language",
+        },
+        uk: {
+          title: "Програму видалено: {programName}",
+          subtitle: "Залишкових файлів: {count}",
+          counter: "Лічильник",
+          switch: "Змінити мову",
+        },
+        ru: {
+          title: "Программа удалена: {programName}",
+          subtitle: "Остаточных файлов: {count}",
+          counter: "Счётчик",
+          switch: "Сменить язык",
+        },
+      };
+
+      const state = {
+        lang: "en",
+        ticks: 0,
+        payload: { programName: "WinZip", count: 12 },
+      };
+
+      function log(msg) {
+        out.textContent = (out.textContent + "\\n" + msg).trim();
+        console.log(msg);
+      }
+
+      const t = (key) =>
+        i18n[state.lang]?.[key] ?? i18n.en[key] ?? key;
+
+      const fmt = (str) =>
+        String(str).replace(/\\{(\\w+)\\}/g, (_, k) =>
+          state.payload[k] ?? ""
+        );
+
+      function render() {
+        headerEl.textContent = fmt(t("title"));
+        subtitleEl.textContent = fmt(t("subtitle"));
+        counterLabelEl.textContent = t("counter");
+        document.getElementById("switchLang").textContent = t("switch");
+
+        dotEl.style.background =
+          state.payload.count > 20 ? "#ff3b30" : "#10b04a";
+
+        log("render -> lang=" + state.lang + " payload=" + JSON.stringify(state.payload));
+      }
+
+      // counter = obvious dynamic proof
+      setInterval(() => {
+        state.ticks++;
+        counterEl.textContent = state.ticks;
+        dotEl.style.opacity = state.ticks % 2 ? "0.5" : "1";
+      }, 1000);
+
+      function switchLang() {
+        const order = ["en", "uk", "ru"];
+        const idx = order.indexOf(state.lang);
+        state.lang = order[(idx + 1) % order.length];
+        render();
+      }
+
+      function applyPayload(p) {
+        state.payload = { ...state.payload, ...p };
+        render();
+      }
+
+      async function safeCall(method, payload) {
+        if (!window.jsBridgeCall) {
+          log("❌ jsBridgeCall not found");
+          return;
+        }
+        const res = await window.jsBridgeCall(method, payload);
+        log("➡️ " + method + " " + JSON.stringify(payload));
+        log("⬅️ " + JSON.stringify(res));
+      }
+
+      window.addEventListener("load", () => {
+        safeCall("template:onReady", {
+          lang: state.lang,
+          ts: Date.now(),
+        });
+        render();
+      });
+
+      document.getElementById("switchLang").onclick = () => switchLang();
+
+      document.getElementById("applyPayload").onclick = () =>
+        applyPayload({ programName: "Adobe Reader", count: 27 });
+
+      document.getElementById("closeWebview").onclick = () =>
+        safeCall("template:onAction", { action: "close_webview" });
+
+      document.getElementById("cta").onclick = () =>
+        safeCall("template:onAction", {
+          action: "cta_click",
+          lang: state.lang,
+        });
+
+      // ===== Sciter -> WebView =====
+      window.__fromSciter = function (msg) {
+        log("⬅️ from Sciter: " + JSON.stringify(msg));
+
+        if (msg?.type === "setLang") {
+          state.lang = msg.lang;
+          render();
+        }
+
+        if (msg?.type === "update") {
+          applyPayload(msg.payload);
+        }
+      };
+    </script>
+  </body>
+</html>
+`;

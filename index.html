@@ -1,0 +1,153 @@
+<html
+  window-frame="solid"
+  window-resizable="false"
+  window-width="850dip"
+  window-height="630dip"
+>
+  <head>
+    <title>Sciter WebView Bridge Test</title>
+
+    <style>
+      html,
+      body {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        background: transparent !important;
+      }
+
+      webview {
+        display: block;
+        size: *;
+        background: transparent !important;
+        behavior: webview library(sciter-webview);
+      }
+
+      .panel {
+        bottom: 12dip;
+        left: 12dip;
+        display: flex;
+        gap: 8dip;
+        background: #ffffffcc;
+        padding: 8dip;
+        border-radius: 6dip;
+      }
+
+      button {
+        padding: 6dip 10dip;
+      }
+    </style>
+
+    <script type="module">
+      import { templateHtml } from "./Templates.js";
+
+      document.on("ready", () => {
+        const elemWebView = document.$("webview");
+        Window.this.state = Window.WINDOW_SHOWN;
+
+        // ===== Bridge: WebView -> Sciter =====
+        elemWebView.jsBridgeCall = (params) => {
+          try {
+            const method = params?.[0];
+            const payload = params?.[1];
+
+            console.log("⬅️ jsBridgeCall:", method, payload);
+
+            switch (method) {
+              case "template:onReady":
+                console.log("template ready:", payload);
+
+                // example: initial command to WebView
+                setTimeout(() => {
+                  sendToTemplate({
+                    type: "update",
+                    payload: {
+                      programName: "WinZip",
+                      count: 12,
+                    },
+                  });
+                }, 500);
+
+                return JSON.stringify({ ok: true });
+
+              case "template:onAction":
+                if (payload?.action === "close_webview") {
+                  Window.this.close();
+                  return JSON.stringify({ ok: true });
+                }
+
+                if (payload?.action === "cta_click") {
+                  console.log("CTA clicked from template:", payload);
+                  return JSON.stringify({ ok: true });
+                }
+
+                return JSON.stringify({ ok: true });
+
+              default:
+                return JSON.stringify({
+                  ok: false,
+                  error: "Unknown method",
+                  method,
+                });
+            }
+          } catch (e) {
+            return JSON.stringify({
+              ok: false,
+              error: String(e),
+            });
+          }
+        };
+
+        // ===== Load template =====
+        elemWebView.on("webview-ready", () => {
+          console.log("webview init success");
+          elemWebView.webview.loadHtml(templateHtml);
+        });
+
+        elemWebView.on("webview-unavailable", () => {
+          console.log("webview init failure");
+        });
+
+        // ===== Helper: Sciter -> WebView =====
+        function sendToTemplate(msg) {
+          const js = `window.__fromSciter(${JSON.stringify(msg)})`;
+          console.log("➡️ to template:", msg);
+          elemWebView.webview.evaluateJavaScript(js);
+        }
+
+        // ===== UI buttons =====
+        document.on("click", "#langEN", () =>
+          sendToTemplate({ type: "setLang", lang: "en" }),
+        );
+        document.on("click", "#langUK", () =>
+          sendToTemplate({ type: "setLang", lang: "uk" }),
+        );
+        document.on("click", "#langRU", () =>
+          sendToTemplate({ type: "setLang", lang: "ru" }),
+        );
+
+        document.on("click", "#updatePayload", () =>
+          sendToTemplate({
+            type: "update",
+            payload: {
+              programName: "Adobe Reader",
+              count: 27,
+            },
+          }),
+        );
+      });
+    </script>
+  </head>
+
+  <body>
+    <webview></webview>
+
+    <!-- ===== Debug control panel ===== -->
+    <div class="panel">
+      <button #langEN>EN</button>
+      <button #langUK>UK</button>
+      <button #langRU>RU</button>
+      <button #updatePayload>Update payload</button>
+    </div>
+  </body>
+</html>
