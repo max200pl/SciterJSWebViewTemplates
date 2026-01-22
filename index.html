@@ -8,15 +8,32 @@
     <title>Sciter WebView Bridge Test</title>
 
     <style>
-      html,
+      html {
+        width: *;
+        height: *;
+        overflow-x: hidden;
+        overflow-y: hidden;
+
+        background: transparent;
+      }
+
       body {
-        padding: 0;
+        position: relative;
         margin: 0;
-        height: 100%;
-        background: transparent !important;
+        border: none;
+      }
+
+      main div {
+        box-sizing: border-box;
+      }
+
+      main {
+        width: *;
+        height: 100%%;
       }
 
       webview {
+        position: relative;
         display: block;
         size: *;
         background: transparent !important;
@@ -24,8 +41,7 @@
       }
 
       .panel {
-        bottom: 12dip;
-        left: 12dip;
+        left: 0;
         display: flex;
         gap: 8dip;
         background: #ffffffcc;
@@ -65,7 +81,7 @@
                       count: 12,
                     },
                   });
-                }, 500);
+                }, 1000);
 
                 return JSON.stringify({ ok: true });
 
@@ -98,7 +114,7 @@
                 let h = Math.max(120, Number(payload?.height) || 0);
 
                 // ===== offsets / margins (подгони под себя) =====
-                const margin = 12; // отступ от края workarea
+                const margin = 0; // отступ от края workarea
                 const framePad = 0; // если нужно добавить рамку/тень/паддинги окна
                 w = w + framePad;
                 h = h + framePad;

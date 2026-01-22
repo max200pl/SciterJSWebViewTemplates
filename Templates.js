@@ -6,19 +6,23 @@ export const templateHtml = `
     <title>Template</title>
 
     <style>
+      html,
       body {
         font-family: system-ui;
-        padding: 16px;
         color: white;
         background: green;
         color: black;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
       }
+
       .card {
         border: 1px solid #ddd;
         border-radius: 12px;
         padding: 16px;
         color: black;
-        width: 420px;
+        width: 450px;
         min-height: 420px;
         background: white;
         display: flex;
@@ -93,7 +97,7 @@ export const templateHtml = `
         <button id="cta">CTA</button>
       </div>
 
-      <pre id="out">(logs)</pre>
+
     </div>
 
     <script>
@@ -176,17 +180,15 @@ export const templateHtml = `
         const card = document.querySelector(".card");
         if (!card) return;
 
-        // IE9+ supports getBoundingClientRect
         const r = card.getBoundingClientRect
-          ? card.getBoundingClientRect()
-          : null;
+            ? card.getBoundingClientRect()
+            : null;
 
-        const width = r ? Math.round(r.right - r.left) : card.offsetWidth;
-        const height = r ? Math.round(r.bottom - r.top) : card.offsetHeight;
+        const width = r ? Math.ceil(r.right - r.left) : card.offsetWidth;
+        const height = r ? Math.ceil(r.bottom - r.top) : card.offsetHeight;
 
-        // send to host (Sciter)
         safeCall("template:onSize", { width, height });
-      }
+    }
 
       function applyPayload(p) {
         state.payload = { ...state.payload, ...p };

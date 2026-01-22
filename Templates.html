@@ -5,19 +5,27 @@
     <title>Template</title>
 
     <style>
+      html,
       body {
         font-family: system-ui;
-        padding: 16px;
         color: white;
-        background: green;
+        background: transparent;
         color: black;
+        margin: 0;
+        padding: 0;
       }
+
+      body {
+        font-family: system-ui;
+        background: green;
+      }
+
       .card {
         border: 1px solid #ddd;
         border-radius: 12px;
         padding: 16px;
         color: black;
-        width: 420px;
+        width: 450px;
         min-height: 420px;
         background: white;
         display: flex;
@@ -149,6 +157,8 @@
         dotEl.style.background =
           state.payload.count > 20 ? "#ff3b30" : "#10b04a";
 
+        reportCardSize();
+
         log(
           "render -> lang=" +
             state.lang +
@@ -169,6 +179,20 @@
         const idx = order.indexOf(state.lang);
         state.lang = order[(idx + 1) % order.length];
         render();
+      }
+
+      function reportCardSize() {
+        const card = document.querySelector(".card");
+        if (!card) return;
+
+        const r = card.getBoundingClientRect
+          ? card.getBoundingClientRect()
+          : null;
+
+        const width = r ? Math.ceil(r.right - r.left) : card.offsetWidth;
+        const height = r ? Math.ceil(r.bottom - r.top) : card.offsetHeight;
+
+        safeCall("template:onSize", { width, height });
       }
 
       function applyPayload(p) {
@@ -192,6 +216,8 @@
           ts: Date.now(),
         });
         render();
+
+        window.addEventListener("resize", reportCardSize);
       });
 
       document.getElementById("switchLang").onclick = () => switchLang();
