@@ -9,12 +9,11 @@ export const templateHtml = `
       html,
       body {
         font-family: system-ui;
-        color: white;
         background: green;
         color: black;
         margin: 0;
         padding: 0;
-        overflow-x: hidden;
+        overflow: hidden; /* important: no scrollbars from tiny rounding */
       }
 
       .card {
@@ -28,17 +27,21 @@ export const templateHtml = `
         display: flex;
         flex-direction: column;
         gap: 10px;
+        box-sizing: border-box; /* important: width includes border/padding */
       }
+
       .row {
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
       }
+
       button {
         padding: 10px 12px;
         border-radius: 10px;
         cursor: pointer;
       }
+
       .badge {
         display: inline-flex;
         align-items: center;
@@ -48,29 +51,37 @@ export const templateHtml = `
         background: #efefef;
         font-size: 12px;
       }
+
       .dot {
         width: 10px;
         height: 10px;
         border-radius: 999px;
         background: #10b04a;
       }
+
       .title {
         margin: 0;
         color: black;
       }
+
       .subtitle {
         margin: 0;
         font-size: 14px;
         color: #333;
       }
+
+      /* Optional debug area — fixed height so it DOES NOT change card size */
       pre {
         background: #f6f6f6;
         padding: 10px;
         border-radius: 10px;
         white-space: pre-wrap;
         font-size: 12px;
-        flex: 1;
         overflow: auto;
+        box-sizing: border-box;
+
+        flex: none;
+        max-height: 120px; /* keep stable height */
       }
     </style>
   </head>
@@ -97,7 +108,8 @@ export const templateHtml = `
         <button id="cta">CTA</button>
       </div>
 
-
+      <!-- You can remove this node; logic will still work -->
+      <pre id="out"></pre>
     </div>
 
     <script>
@@ -135,18 +147,51 @@ export const templateHtml = `
         payload: { programName: "WinZip", count: 12 },
       };
 
+      // safe log: works even if <pre id="out"> is removed
       function log(msg) {
-        out.textContent = (out.textContent + "\\n" + msg).trim();
+        if (out) {
+          // keep last ~120 lines to avoid endless growth
+          const next = (out.textContent ? out.textContent + "\\n" : "") + msg;
+          const lines = next.split("\\n");
+          out.textContent = lines.length > 120 ? lines.slice(lines.length - 120).join("\\n") : next;
+        }
         console.log(msg);
       }
 
-      const t = (key) =>
-        i18n[state.lang]?.[key] ?? i18n.en[key] ?? key;
+      const t = (key) => i18n[state.lang]?.[key] ?? i18n.en[key] ?? key;
 
       const fmt = (str) =>
-        String(str).replace(/\\{(\\w+)\\}/g, (_, k) =>
-          state.payload[k] ?? ""
-        );
+        String(str).replace(/\\{(\\w+)\\}/g, (_, k) => state.payload[k] ?? "");
+
+      // ==== size reporting (stable) ====
+      let __measureScheduled = false;
+      let __lastSizeKey = "";
+
+      function reportCardSize() {
+        const card = document.querySelector(".card");
+        if (!card) return;
+
+        // offsetWidth/offsetHeight are stable (no fractional rounding issues)
+        const width = card.offsetWidth;
+        const height = card.offsetHeight;
+
+        const key = width + "x" + height;
+        if (key === __lastSizeKey) return;
+        __lastSizeKey = key;
+
+        safeCall("template:onSize", { width, height });
+      }
+
+      function requestMeasure() {
+        if (__measureScheduled) return;
+        __measureScheduled = true;
+
+        // one measure per tick, after DOM updates are applied
+        setTimeout(() => {
+          __measureScheduled = false;
+          reportCardSize();
+        }, 0);
+      }
 
       function render() {
         headerEl.textContent = fmt(t("title"));
@@ -154,12 +199,11 @@ export const templateHtml = `
         counterLabelEl.textContent = t("counter");
         document.getElementById("switchLang").textContent = t("switch");
 
-        dotEl.style.background =
-          state.payload.count > 20 ? "#ff3b30" : "#10b04a";
-
-        reportCardSize();
+        dotEl.style.background = state.payload.count > 20 ? "#ff3b30" : "#10b04a";
 
         log("render -> lang=" + state.lang + " payload=" + JSON.stringify(state.payload));
+
+        requestMeasure();
       }
 
       // counter = obvious dynamic proof
@@ -175,20 +219,6 @@ export const templateHtml = `
         state.lang = order[(idx + 1) % order.length];
         render();
       }
-
-    function reportCardSize() {
-        const card = document.querySelector(".card");
-        if (!card) return;
-
-        const r = card.getBoundingClientRect
-            ? card.getBoundingClientRect()
-            : null;
-
-        const width = r ? Math.ceil(r.right - r.left) : card.offsetWidth;
-        const height = r ? Math.ceil(r.bottom - r.top) : card.offsetHeight;
-
-        safeCall("template:onSize", { width, height });
-    }
 
       function applyPayload(p) {
         state.payload = { ...state.payload, ...p };
@@ -206,13 +236,11 @@ export const templateHtml = `
       }
 
       window.addEventListener("load", () => {
-        safeCall("template:onReady", {
-          lang: state.lang,
-          ts: Date.now(),
-        });
+        safeCall("template:onReady", { lang: state.lang, ts: Date.now() });
         render();
 
-        window.addEventListener("resize", reportCardSize);
+        // resize events can happen after host window move/resize
+        window.addEventListener("resize", requestMeasure);
       });
 
       document.getElementById("switchLang").onclick = () => switchLang();
@@ -224,22 +252,22 @@ export const templateHtml = `
         safeCall("template:onAction", { action: "close_webview" });
 
       document.getElementById("cta").onclick = () =>
-        safeCall("template:onAction", {
-          action: "cta_click",
-          lang: state.lang,
-        });
+        safeCall("template:onAction", { action: "cta_click", lang: state.lang });
 
       // ===== Sciter -> WebView =====
       window.__fromSciter = function (msg) {
+        // keep this log safe even if out is missing
         log("⬅️ from Sciter: " + JSON.stringify(msg));
 
         if (msg?.type === "setLang") {
           state.lang = msg.lang;
           render();
+          return;
         }
 
         if (msg?.type === "update") {
           applyPayload(msg.payload);
+          return;
         }
       };
     </script>
