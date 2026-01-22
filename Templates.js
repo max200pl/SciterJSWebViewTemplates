@@ -9,7 +9,7 @@ export const templateHtml = `
       html,
       body {
         font-family: system-ui;
-        background: green;
+        background: transparent;
         color: black;
         margin: 0;
         padding: 0;
