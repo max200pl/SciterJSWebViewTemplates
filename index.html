@@ -83,6 +83,19 @@
 
                 return JSON.stringify({ ok: true });
 
+              case "template:onSize": {
+                // payload: { width, height }
+                console.log("template size:", payload);
+
+                // OPTIONAL: если хочешь автоподгон окна под card —
+                // включи и поправь формулу под свои dip/padding/рамки
+                // const w = Math.max(200, payload?.width || 0);
+                // const h = Math.max(200, payload?.height || 0);
+                // Window.this.box("rect", { width: w + 40, height: h + 40 });
+
+                return JSON.stringify({ ok: true });
+              }
+
               default:
                 return JSON.stringify({
                   ok: false,

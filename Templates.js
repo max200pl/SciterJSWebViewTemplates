@@ -153,6 +153,8 @@ export const templateHtml = `
         dotEl.style.background =
           state.payload.count > 20 ? "#ff3b30" : "#10b04a";
 
+        reportCardSize();
+
         log("render -> lang=" + state.lang + " payload=" + JSON.stringify(state.payload));
       }
 
@@ -168,6 +170,22 @@ export const templateHtml = `
         const idx = order.indexOf(state.lang);
         state.lang = order[(idx + 1) % order.length];
         render();
+      }
+
+    function reportCardSize() {
+        const card = document.querySelector(".card");
+        if (!card) return;
+
+        // IE9+ supports getBoundingClientRect
+        const r = card.getBoundingClientRect
+          ? card.getBoundingClientRect()
+          : null;
+
+        const width = r ? Math.round(r.right - r.left) : card.offsetWidth;
+        const height = r ? Math.round(r.bottom - r.top) : card.offsetHeight;
+
+        // send to host (Sciter)
+        safeCall("template:onSize", { width, height });
       }
 
       function applyPayload(p) {
@@ -191,6 +209,8 @@ export const templateHtml = `
           ts: Date.now(),
         });
         render();
+
+        window.addEventListener("resize", reportCardSize);
       });
 
       document.getElementById("switchLang").onclick = () => switchLang();
