@@ -1,7 +1,6 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Template</title>
 
     <style>
@@ -119,38 +118,35 @@
       const counterLabelEl = document.getElementById("counterLabel");
       const dotEl = document.getElementById("dot");
 
-      // local fallback i18n (used when Sciter does NOT send i18n)
-      const i18n = {
-        en: {
-          title: "Program removed: {programName}",
-          subtitle: "Leftover files: {count}",
-          counter: "Live counter",
-          switch: "Switch language",
-        },
-        uk: {
-          title: "Програму видалено: {programName}",
-          subtitle: "Залишкових файлів: {count}",
-          counter: "Лічильник",
-          switch: "Змінити мову",
-        },
-        ru: {
-          title: "Программа удалена: {programName}",
-          subtitle: "Остаточных файлов: {count}",
-          counter: "Счётчик",
-          switch: "Сменить язык",
-        },
-      };
-
       const state = {
         lang: "en",
         ticks: 0,
         payload: { programName: "WinZip", count: 12 },
+        i18n: {
+          en: {
+            title: "Program removed: {programName}",
+            subtitle: "Leftover files: {count}",
+            counter: "Live counter",
+            switch: "Switch language",
+          },
+          uk: {
+            title: "Програму видалено: {programName}",
+            subtitle: "Залишкових файлів: {count}",
+            counter: "Лічильник",
+            switch: "Змінити мову",
+          },
+          ru: {
+            title: "Программа удалена: {programName}",
+            subtitle: "Остаточных файлов: {count}",
+            counter: "Счётчик",
+            switch: "Сменить язык",
+          },
+        },
       };
 
       // safe log: works even if <pre id="out"> is removed
       function log(msg) {
         if (out) {
-          // keep last ~120 lines to avoid endless growth
           const next = (out.textContent ? out.textContent + "\\n" : "") + msg;
           const lines = next.split("\\n");
           out.textContent =
@@ -161,18 +157,19 @@
         console.log(msg);
       }
 
-      // ✅ merge i18n from Sciter (partial override supported)
+      // ✅ merge i18n from Sciter into state.i18n
       function mergeI18n(hostI18n) {
         if (!hostI18n || typeof hostI18n !== "object") return false;
 
         for (const [lang, dict] of Object.entries(hostI18n)) {
           if (!dict || typeof dict !== "object") continue;
-          i18n[lang] = { ...(i18n[lang] || {}), ...dict };
+          state.i18n[lang] = { ...(state.i18n[lang] || {}), ...dict };
         }
         return true;
       }
 
-      const t = (key) => i18n[state.lang]?.[key] ?? i18n.en[key] ?? key;
+      const t = (key) =>
+        state.i18n[state.lang]?.[key] ?? state.i18n.en?.[key] ?? key;
 
       const fmt = (str) =>
         String(str).replace(/\\{(\\w+)\\}/g, (_, k) => state.payload[k] ?? "");
@@ -185,7 +182,6 @@
         const card = document.querySelector(".card");
         if (!card) return;
 
-        // offsetWidth/offsetHeight are stable (no fractional rounding issues)
         const width = card.offsetWidth;
         const height = card.offsetHeight;
 
@@ -200,7 +196,6 @@
         if (__measureScheduled) return;
         __measureScheduled = true;
 
-        // one measure per tick, after DOM updates are applied
         setTimeout(() => {
           __measureScheduled = false;
           reportCardSize();
@@ -258,8 +253,6 @@
       window.addEventListener("load", () => {
         safeCall("template:onReady", { lang: state.lang, ts: Date.now() });
         render();
-
-        // resize events can happen after host window move/resize
         window.addEventListener("resize", requestMeasure);
       });
 
@@ -279,10 +272,8 @@
 
       // ===== Sciter -> WebView =====
       window.__fromSciter = function (msg) {
-        // keep this log safe even if out is missing
         log("⬅️ from Sciter: " + JSON.stringify(msg));
 
-        // ✅ NEW: init (lang + i18n + payload)
         if (msg?.type === "init") {
           if (mergeI18n(msg.i18n)) log("✅ i18n merged from Sciter");
           if (msg.lang) state.lang = msg.lang;
@@ -291,7 +282,6 @@
           return;
         }
 
-        // ✅ NEW: i18n only update
         if (msg?.type === "setI18n") {
           if (mergeI18n(msg.i18n)) {
             log("✅ i18n updated from Sciter");
