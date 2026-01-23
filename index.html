@@ -6,7 +6,7 @@
 >
   <head>
     <title>Sciter WebView Bridge Test</title>
-
+    <meta charset="utf-8" />
     <style>
       html {
         width: *;
@@ -58,6 +58,13 @@
       document.on("ready", () => {
         const elemWebView = document.$("webview");
 
+        // ===== Helper: Sciter -> WebView =====
+        function sendToTemplate(msg) {
+          const js = `window.__fromSciter(${JSON.stringify(msg)})`;
+          console.log("➡️ to template:", msg);
+          elemWebView.webview.evaluateJavaScript(js);
+        }
+
         // ===== Bridge: WebView -> Sciter =====
         elemWebView.jsBridgeCall = (params) => {
           try {
@@ -70,16 +77,37 @@
               case "template:onReady":
                 console.log("template ready:", payload);
 
-                // example: initial command to WebView
+                // ✅ initial command to WebView (includes i18n + lang + payload)
                 setTimeout(() => {
                   sendToTemplate({
-                    type: "update",
+                    type: "init",
+                    lang: "en",
+                    i18n: {
+                      en: {
+                        title: "Program removed: {programName}",
+                        subtitle: "Leftover files: {count}",
+                        counter: "Live counter",
+                        switch: "Switch language",
+                      },
+                      uk: {
+                        title: "Програму видалено: {programName}",
+                        subtitle: "Залишкових файлів: {count}",
+                        counter: "Лічильник",
+                        switch: "Змінити мову",
+                      },
+                      ru: {
+                        title: "Программа удалена: {programName}",
+                        subtitle: "Остаточных файлов: {count}",
+                        counter: "Счётчик",
+                        switch: "Сменить язык",
+                      },
+                    },
                     payload: {
                       programName: "WinZip",
                       count: 12,
                     },
                   });
-                }, 1000);
+                }, 0);
 
                 return JSON.stringify({ ok: true });
 
@@ -158,13 +186,6 @@
           console.log("webview init failure");
         });
 
-        // ===== Helper: Sciter -> WebView =====
-        function sendToTemplate(msg) {
-          const js = `window.__fromSciter(${JSON.stringify(msg)})`;
-          console.log("➡️ to template:", msg);
-          elemWebView.webview.evaluateJavaScript(js);
-        }
-
         // ===== UI buttons =====
         document.on("click", "#langEN", () =>
           sendToTemplate({ type: "setLang", lang: "en" }),
@@ -175,7 +196,6 @@
         document.on("click", "#langRU", () =>
           sendToTemplate({ type: "setLang", lang: "ru" }),
         );
-
         document.on("click", "#updatePayload", () =>
           sendToTemplate({
             type: "update",
@@ -185,6 +205,25 @@
             },
           }),
         );
+        document.on("click", "#updateI18n", () =>
+        sendToTemplate({
+            type: "setI18n",
+            i18n: {
+            ru: {
+                title: "🚀 RU from Sciter: {programName}",
+                subtitle: "🧹 Осталось файлов: {count}",
+                counter: "Счётчик (SCITER)",
+                switch: "Сменить язык",
+            },
+            en: {
+                title: "🚀 EN from Sciter: {programName}",
+                subtitle: "🧹 Files left: {count}",
+                counter: "Counter (SCITER)",
+                switch: "Switch lang",
+            },
+            },
+        }),
+        );
       });
     </script>
   </head>
@@ -192,12 +231,13 @@
   <body>
     <webview></webview>
 
-    <!-- ===== Debug control panel ===== -->
     <div class="panel">
-      <button #langEN>EN</button>
-      <button #langUK>UK</button>
-      <button #langRU>RU</button>
-      <button #updatePayload>Update payload</button>
+        <button #langEN>EN</button>
+        <button #langUK>UK</button>
+        <button #langRU>RU</button>
+        <button #updatePayload>Update payload</button>
+        <button #updateI18n>Update i18n</button>
+    </div>
     </div>
   </body>
 </html>

@@ -1,8 +1,8 @@
 export const templateHtml = `
 <html>
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+
     <title>Template</title>
 
     <style>
@@ -120,6 +120,7 @@ export const templateHtml = `
       const counterLabelEl = document.getElementById("counterLabel");
       const dotEl = document.getElementById("dot");
 
+      // local fallback i18n (used when Sciter does NOT send i18n)
       const i18n = {
         en: {
           title: "Program removed: {programName}",
@@ -156,6 +157,17 @@ export const templateHtml = `
           out.textContent = lines.length > 120 ? lines.slice(lines.length - 120).join("\\n") : next;
         }
         console.log(msg);
+      }
+
+      // ✅ merge i18n from Sciter (partial override supported)
+      function mergeI18n(hostI18n) {
+        if (!hostI18n || typeof hostI18n !== "object") return false;
+
+        for (const [lang, dict] of Object.entries(hostI18n)) {
+          if (!dict || typeof dict !== "object") continue;
+          i18n[lang] = { ...(i18n[lang] || {}), ...dict };
+        }
+        return true;
       }
 
       const t = (key) => i18n[state.lang]?.[key] ?? i18n.en[key] ?? key;
@@ -258,6 +270,24 @@ export const templateHtml = `
       window.__fromSciter = function (msg) {
         // keep this log safe even if out is missing
         log("⬅️ from Sciter: " + JSON.stringify(msg));
+
+        // ✅ NEW: init (lang + i18n + payload)
+        if (msg?.type === "init") {
+          if (mergeI18n(msg.i18n)) log("✅ i18n merged from Sciter");
+          if (msg.lang) state.lang = msg.lang;
+          if (msg.payload) state.payload = { ...state.payload, ...msg.payload };
+          render();
+          return;
+        }
+
+        // ✅ NEW: i18n only update
+        if (msg?.type === "setI18n") {
+          if (mergeI18n(msg.i18n)) {
+            log("✅ i18n updated from Sciter");
+            render();
+          }
+          return;
+        }
 
         if (msg?.type === "setLang") {
           state.lang = msg.lang;
