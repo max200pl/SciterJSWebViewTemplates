@@ -1,0 +1,281 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>PC Cleaner System Monitor</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: transparent;
+      }
+
+      body {
+        font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .notification-dialog {
+        width: 480px;
+        background: white;
+        border: 1px solid #ccc;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Header */
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 15px;
+        border-bottom: 1px solid #e0e0e0;
+        background: #f5f5f5;
+      }
+
+      .header-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+      }
+
+      .header-icon {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+      }
+
+      .header-icon img {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .header-text {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+        font-size: 15px;
+        line-height: normal;
+        color: black;
+        margin: 0;
+        font-variation-settings: 'wdth' 100;
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .settings-button,
+      .close-button {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        background: transparent;
+        border: none;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .settings-button img,
+      .close-button img {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .settings-button:hover,
+      .close-button:hover {
+        opacity: 0.7;
+      }
+
+      /* Content */
+      .content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 30px 30px 30px;
+        gap: 16px;
+        background: white;
+      }
+
+      .logo-container {
+        width: 54px;
+        height: 54px;
+        margin-bottom: 8px;
+      }
+
+      .logo-container img {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .main-title {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 700;
+        font-size: 15px;
+        line-height: normal;
+        color: rgba(0, 0, 0, 0.8);
+        margin: 0;
+        text-align: center;
+        font-variation-settings: 'wdth' 100;
+      }
+
+      .subtitle {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+        font-size: 15px;
+        line-height: normal;
+        color: black;
+        margin: 0;
+        text-align: center;
+        font-variation-settings: 'wdth' 100;
+      }
+
+      .description {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+        font-size: 15px;
+        line-height: 1.4;
+        color: black;
+        margin: 12px 0 8px 0;
+        text-align: center;
+        max-width: 345px;
+        font-variation-settings: 'wdth' 100;
+      }
+
+      .ok-button-wrapper {
+        margin-top: 12px;
+      }
+
+      .ok-button {
+        width: 186px;
+        height: 44px;
+        background: #0d9e00;
+        border: none;
+        border-radius: 2px;
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: normal;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-variation-settings: 'wdth' 100;
+        transition: background 0.2s;
+      }
+
+      .ok-button:hover {
+        background: #0b8500;
+      }
+
+      .ok-button:active {
+        background: #096d00;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="notification-dialog">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-content">
+          <p class="header-text">PC Helpsoft PC Cleaner</p>
+        </div>
+        <div class="header-actions">
+          <button class="settings-button" id="settingsButton" aria-label="Settings">
+            <img src="http://localhost:3845/assets/5ccc41cfbb0a6dfc5739e8cc4f651c8c21491087.svg" alt="Settings">
+          </button>
+          <button class="close-button" id="closeButton" aria-label="Close">
+            <img src="http://localhost:3845/assets/fc99ae6a7e83b42ff782a4849d16a69ee5cd9620.svg" alt="Close">
+          </button>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+        <div class="logo-container">
+          <img src="http://localhost:3845/assets/66d8259427f83e0cd0b4e5c4f56553f901711620.svg" alt="PC Cleaner Logo">
+        </div>
+
+        <h1 class="main-title">PC Cleaner System Monitor</h1>
+
+        <p class="subtitle">Is now active in your system tray</p>
+
+        <p class="description">
+          System monitor notifications will keep you informed<br>
+          about issues affecting PC performance
+        </p>
+
+        <div class="ok-button-wrapper">
+          <button class="ok-button" id="okButton">Ok, Thanks</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Bridge function for communicating with Sciter host
+      async function safeCall(method, payload) {
+        if (!window.jsBridgeCall) {
+          console.log('❌ jsBridgeCall not found');
+          return;
+        }
+        try {
+          const res = await window.jsBridgeCall(method, payload);
+          console.log('➡️', method, payload);
+          console.log('⬅️', res);
+          return res;
+        } catch (error) {
+          console.error('Bridge call error:', error);
+        }
+      }
+
+      // Initialize
+      window.addEventListener('load', () => {
+        safeCall('template:onReady', { type: 'system_monitor', ts: Date.now() });
+
+        // Report dialog size to Sciter host
+        const dialog = document.querySelector('.notification-dialog');
+        if (dialog) {
+          setTimeout(() => {
+            const width = dialog.offsetWidth;
+            const height = dialog.offsetHeight;
+            safeCall('template:onSize', { width, height });
+          }, 100);
+        }
+      });
+
+      // Close button
+      document.getElementById('closeButton').addEventListener('click', () => {
+        safeCall('template:onAction', { action: 'close_webview' });
+      });
+
+      // Settings button
+      document.getElementById('settingsButton').addEventListener('click', () => {
+        safeCall('template:onAction', { action: 'open_settings' });
+      });
+
+      // Ok button
+      document.getElementById('okButton').addEventListener('click', () => {
+        safeCall('template:onAction', { action: 'ok_thanks' });
+      });
+    </script>
+  </body>
+</html>

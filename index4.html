@@ -1,0 +1,338 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Subscription Expired</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: transparent;
+      }
+
+      body {
+        font-family: 'Segoe UI', 'Roboto', system-ui, -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .subscription-card {
+        width: 500px;
+        background: white;
+        border: 1px solid #ccc;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Header */
+      .header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding: 20px 25px 15px 25px;
+      }
+
+      .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .logo {
+        width: 50px;
+        height: 50px;
+        flex-shrink: 0;
+      }
+
+      .brand-text {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .brand-name {
+        font-family: 'Segoe UI', sans-serif;
+        font-weight: 700;
+        font-size: 16px;
+        line-height: 20px;
+        color: #7fc023;
+        margin: 0;
+      }
+
+      .product-name {
+        font-family: 'Segoe UI', sans-serif;
+        font-weight: 600;
+        font-size: 28px;
+        line-height: 30px;
+        color: #535353;
+        margin: 0;
+      }
+
+      .close-button {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        background: transparent;
+        border: none;
+        padding: 0;
+        color: #666;
+        flex-shrink: 0;
+      }
+
+      .close-button svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .close-button:hover {
+        opacity: 0.7;
+      }
+
+      /* Content */
+      .content {
+        padding: 0 35px 20px 35px;
+      }
+
+      .expired-message {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 500;
+        font-size: 15px;
+        line-height: normal;
+        color: #ff3019;
+        margin: 0 0 20px 0;
+        font-variation-settings: 'wdth' 100;
+      }
+
+      .description {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 1.4;
+        color: black;
+        margin: 0 0 25px 0;
+        font-variation-settings: 'wdth' 100;
+      }
+
+      /* Illustration Section */
+      .illustration-section {
+        position: relative;
+        width: 100%;
+        height: 180px;
+        margin-bottom: 0;
+        overflow: hidden;
+      }
+
+      .wave-bg {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+      }
+
+      .clock-illustration {
+        position: absolute;
+        right: 60px;
+        top: 20px;
+        width: 120px;
+        height: 120px;
+      }
+
+      /* Footer */
+      .footer {
+        background: #4A6B9A;
+        padding: 20px 35px 30px 35px;
+        text-align: center;
+      }
+
+      .footer-text {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+        font-size: 15px;
+        line-height: normal;
+        color: rgba(255, 255, 255, 0.8);
+        margin: 0 0 20px 0;
+        font-variation-settings: 'wdth' 100;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+      }
+
+      .button {
+        height: 44px;
+        border: none;
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+        font-size: 14px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+        font-variation-settings: 'wdth' 100;
+        flex: 1;
+        max-width: 200px;
+      }
+
+      .button:hover {
+        opacity: 0.9;
+      }
+
+      .button-later {
+        background: #9e9e9e;
+        color: white;
+      }
+
+      .button-renew {
+        background: #5cb72f;
+        color: white;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="subscription-card">
+      <!-- Header -->
+      <div class="header">
+        <div class="logo-section">
+          <div class="logo">
+            <svg viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="25" cy="25" r="24" fill="#7fc023"/>
+              <path d="M15 25L22 32L35 17" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <p class="brand-name">PC HelpSoft</p>
+            <p class="product-name">PC Cleaner</p>
+          </div>
+        </div>
+        <button class="close-button" id="closeButton" aria-label="Close">
+          <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+        <p class="expired-message">
+          Your subscription to PC Cleaner has ended!
+        </p>
+
+        <p class="description">
+          To use this feature you need to renew your<br>
+          subscription.
+        </p>
+      </div>
+
+      <!-- Illustration Section -->
+      <div class="illustration-section">
+        <!-- Blue Wave Background -->
+        <svg class="wave-bg" viewBox="0 0 500 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <path d="M0 80C100 50, 200 70, 300 60C400 50, 450 55, 500 50L500 180L0 180Z" fill="#4A6B9A"/>
+        </svg>
+
+        <!-- Clock Illustration -->
+        <div class="clock-illustration">
+          <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Clock body -->
+            <circle cx="60" cy="60" r="35" fill="white" stroke="#333" stroke-width="3"/>
+            <circle cx="60" cy="60" r="28" fill="none" stroke="#333" stroke-width="1.5"/>
+
+            <!-- Clock hands -->
+            <line x1="60" y1="60" x2="60" y2="35" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="60" y1="60" x2="75" y2="60" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="60" cy="60" r="3" fill="#333"/>
+
+            <!-- Clock markers -->
+            <circle cx="60" cy="32" r="2" fill="#333"/>
+            <circle cx="60" cy="88" r="2" fill="#333"/>
+            <circle cx="32" cy="60" r="2" fill="#333"/>
+            <circle cx="88" cy="60" r="2" fill="#333"/>
+
+            <!-- Sparkles -->
+            <circle cx="25" cy="40" r="2" fill="#5cb72f" opacity="0.6"/>
+            <circle cx="95" cy="45" r="2.5" fill="#5cb72f" opacity="0.6"/>
+            <circle cx="30" cy="75" r="1.5" fill="#5cb72f" opacity="0.6"/>
+            <circle cx="90" cy="75" r="2" fill="#5cb72f" opacity="0.6"/>
+
+            <!-- Alert symbols -->
+            <text x="50" y="68" font-size="20" fill="#ff3019" font-weight="bold">!</text>
+            <text x="68" y="68" font-size="20" fill="#ff3019" font-weight="bold">×</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <p class="footer-text">
+          Would you like to renew your subscription now?
+        </p>
+
+        <div class="button-group">
+          <button class="button button-later" id="laterButton">
+            Remind me Later
+          </button>
+          <button class="button button-renew" id="renewButton">
+            Renew Now
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Bridge function for communicating with Sciter host
+      async function safeCall(method, payload) {
+        if (!window.jsBridgeCall) {
+          console.log('❌ jsBridgeCall not found');
+          return;
+        }
+        try {
+          const res = await window.jsBridgeCall(method, payload);
+          console.log('➡️', method, payload);
+          console.log('⬅️', res);
+          return res;
+        } catch (error) {
+          console.error('Bridge call error:', error);
+        }
+      }
+
+      // Initialize
+      window.addEventListener('load', () => {
+        safeCall('template:onReady', { type: 'subscription_expired', ts: Date.now() });
+
+        // Report dialog size to Sciter host
+        const card = document.querySelector('.subscription-card');
+        if (card) {
+          setTimeout(() => {
+            const width = card.offsetWidth;
+            const height = card.offsetHeight;
+            safeCall('template:onSize', { width, height });
+          }, 100);
+        }
+      });
+
+      // Close button
+      document.getElementById('closeButton').addEventListener('click', () => {
+        safeCall('template:onAction', { action: 'close_webview' });
+      });
+
+      // Later button
+      document.getElementById('laterButton').addEventListener('click', () => {
+        safeCall('template:onAction', { action: 'remind_later' });
+      });
+
+      // Renew button
+      document.getElementById('renewButton').addEventListener('click', () => {
+        safeCall('template:onAction', { action: 'renew_now' });
+      });
+    </script>
+  </body>
+</html>

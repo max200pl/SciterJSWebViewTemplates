@@ -1,0 +1,341 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Bug Report</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: transparent;
+      }
+
+      body {
+        font-family: 'Inter', 'Roboto', system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .bug-report-dialog {
+        width: 500px;
+        background: white;
+        border: 1px solid #ccc;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Header */
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 15px;
+        background: white;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .logo-icon {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+      }
+
+      .title {
+        font-family: 'Inter', sans-serif;
+        font-weight: 400;
+        font-size: 15px;
+        color: black;
+        margin: 0;
+      }
+
+      .close-button {
+        width: 12px;
+        height: 12px;
+        background: transparent;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      .close-button:hover {
+        opacity: 0.7;
+      }
+
+      /* Gray Info Section */
+      .info-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 20px;
+        background: #666;
+      }
+
+      .sad-face-icon {
+        width: 41px;
+        height: 41px;
+        flex-shrink: 0;
+      }
+
+      .info-text {
+        font-family: 'Inter', sans-serif;
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 1.4;
+        color: white;
+        margin: 0;
+      }
+
+      /* Content */
+      .content {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .description {
+        font-family: 'Inter', sans-serif;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 1.4;
+        color: #191919;
+        margin: 0;
+      }
+
+      .label {
+        font-family: 'Inter', sans-serif;
+        font-weight: 400;
+        font-size: 14px;
+        color: #191919;
+        margin: 0;
+      }
+
+      .textarea {
+        width: 100%;
+        min-height: 100px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        line-height: 1.5;
+        color: black;
+        resize: vertical;
+      }
+
+      .textarea:focus {
+        outline: none;
+        border-color: #2375be;
+      }
+
+      .email-input {
+        width: 300px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: black;
+      }
+
+      .email-input:focus {
+        outline: none;
+        border-color: #2375be;
+      }
+
+      .privacy-text {
+        font-family: 'Inter', sans-serif;
+        font-weight: 400;
+        font-size: 11px;
+        line-height: normal;
+        color: #191919;
+        margin: 0;
+      }
+
+      .privacy-link {
+        color: #2375be;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      .privacy-link:hover {
+        opacity: 0.8;
+      }
+
+      /* Buttons */
+      .button-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 10px;
+      }
+
+      .button {
+        padding: 12px 30px;
+        border-radius: 4px;
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+        font-size: 15px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+      }
+
+      .button:hover {
+        opacity: 0.9;
+      }
+
+      .button-dont-send {
+        background: white;
+        color: #2459b1;
+        border: 1px solid #2459b1;
+      }
+
+      .button-send {
+        background: #00a300;
+        color: white;
+        border: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="bug-report-dialog">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-left">
+          <div class="logo-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <mask id="mask0_714_2114" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+                <path d="M23.606 0H0V24H23.606V0Z" fill="white"/>
+              </mask>
+              <g mask="url(#mask0_714_2114)">
+                <path d="M18.2289 5.85699C19.5771 7.59215 20.2606 9.75212 20.1559 11.947C20.1579 12.4464 20.1133 12.9448 20.0229 13.436C20.0309 13.272 20.0409 13.105 20.0369 12.936C20.0629 10.43 19.1942 7.99685 17.5869 6.07399C16.3509 6.64899 14.9809 8.91898 15.8539 11.93C16.3029 13.479 17.3369 14.482 17.7829 15.997C18.1851 17.4227 18.4078 18.8931 18.4459 20.374C18.4459 20.374 23.3249 16.569 23.5879 12.397C23.9279 7.00598 19.7699 5.68898 18.2299 5.85998" fill="#9CCB3B"/>
+                <path d="M5.37792 17.7709C4.02974 16.0357 3.34628 13.8758 3.45092 11.6809C3.44899 11.1815 3.49352 10.683 3.58392 10.1919C3.57592 10.3559 3.56592 10.5229 3.56992 10.6919C3.5439 13.1979 4.41262 15.631 6.01992 17.5539C7.25592 16.9789 8.62592 14.7089 7.75292 11.6979C7.30392 10.1489 6.26992 9.14591 5.82392 7.63091C5.4218 6.20515 5.19908 4.7348 5.16092 3.25391C5.16092 3.25391 0.282922 7.06191 0.0199219 11.2339C-0.320078 16.6249 3.83792 17.9419 5.37792 17.7709Z" fill="#6CB545"/>
+                <path d="M5.69591 5.4527C7.41461 4.08379 9.56608 3.37444 11.7619 3.4527C12.2614 3.44439 12.7605 3.48255 13.2529 3.5667C13.0889 3.5607 12.9209 3.5527 12.7529 3.5587C10.2467 3.56408 7.82452 4.4633 5.92191 6.0947C6.51191 7.3227 8.79991 8.6647 11.7999 7.7547C13.3439 7.2867 14.3329 6.2397 15.8429 5.7747C17.2634 5.35466 18.7307 5.11346 20.2109 5.0567C20.2109 5.0567 16.3399 0.223697 12.1649 0.0126967C6.76992 -0.259303 5.50591 3.9127 5.69591 5.4527Z" fill="#B5D729"/>
+                <path d="M17.8009 18.5476C16.0822 19.9165 13.9307 20.6258 11.7349 20.5476C11.2354 20.5559 10.7363 20.5177 10.2439 20.4336C10.4079 20.4396 10.5759 20.4476 10.7439 20.4416C13.2501 20.4362 15.6723 19.537 17.5749 17.9056C16.9849 16.6776 14.6969 15.3356 11.6969 16.2456C10.1529 16.7136 9.16389 17.7606 7.65389 18.2256C6.23341 18.6456 4.76608 18.8868 3.28589 18.9436C3.28589 18.9436 7.15189 23.7746 11.3269 23.9846C16.7219 24.2566 17.9859 20.0846 17.7959 18.5446" fill="#84C529"/>
+              </g>
+            </svg>
+          </div>
+          <h1 class="title">Bug Report</h1>
+        </div>
+        <button class="close-button" id="closeButton" aria-label="Close">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g opacity="0.7">
+              <path d="M11.9997 10.7141L1.28564 0L0.000124454 1.28552L10.7142 11.9996L11.9997 10.7141Z" fill="black"/>
+              <path d="M1.28543 12.0002L11.9995 1.28613L10.714 0.000612735L-9.04257e-05 10.7147L1.28543 12.0002Z" fill="black"/>
+            </g>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Info Section -->
+      <div class="info-section">
+        <div class="sad-face-icon">
+          <svg width="41" height="41" viewBox="0 0 41 41" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M20.4944 40.5059C24.45 40.5059 28.3168 39.3329 31.6058 37.1353C34.8948 34.9376 37.4582 31.8141 38.972 28.1595C40.4857 24.505 40.8818 20.4837 40.1101 16.6041C39.3384 12.7244 37.4336 9.16078 34.6365 6.36373C31.8395 3.56668 28.2758 1.66187 24.3962 0.890163C20.5166 0.118458 16.4952 0.514525 12.8407 2.02828C9.18619 3.54203 6.06262 6.10548 3.86499 9.39446C1.66736 12.6834 0.494385 16.5502 0.494385 20.5059C0.494385 25.8102 2.60152 30.8973 6.35225 34.648C8.20942 36.5052 10.4142 37.9784 12.8407 38.9835C15.2672 39.9886 17.8679 40.5059 20.4944 40.5059ZM20.4944 38.9059C24.1336 38.9059 27.691 37.8267 30.7169 35.8049C33.7427 33.7831 36.1011 30.9094 37.4938 27.5472C38.8864 24.1851 39.2508 20.4855 38.5408 16.9162C37.8309 13.347 36.0784 10.0684 33.5051 7.4951C30.9319 4.92182 27.6533 3.16939 24.084 2.45942C20.5148 1.74945 16.8152 2.11383 13.453 3.50648C10.0908 4.89914 7.21716 7.25751 5.19534 10.2834C3.17353 13.3092 2.09438 16.8667 2.09438 20.5059C2.09438 25.3859 4.03295 30.066 7.48362 33.5166C10.9343 36.9673 15.6144 38.9059 20.4944 38.9059ZM13.2944 18.1059C13.6108 18.1059 13.9202 18.012 14.1833 17.8362C14.4464 17.6604 14.6515 17.4105 14.7726 17.1182C14.8937 16.8258 14.9254 16.5041 14.8636 16.1937C14.8019 15.8834 14.6495 15.5983 14.4258 15.3745C14.202 15.1507 13.9169 14.9983 13.6065 14.9366C13.2962 14.8749 12.9745 14.9066 12.6821 15.0277C12.3897 15.1488 12.1398 15.3538 11.964 15.617C11.7882 15.8801 11.6944 16.1894 11.6944 16.5059C11.6944 16.9302 11.863 17.3372 12.163 17.6372C12.4631 17.9373 12.87 18.1059 13.2944 18.1059ZM27.6944 18.1059C28.0108 18.1059 28.3202 18.012 28.5833 17.8362C28.8464 17.6604 29.0515 17.4105 29.1726 17.1182C29.2937 16.8258 29.3254 16.5041 29.2636 16.1937C29.2019 15.8834 29.0495 15.5983 28.8258 15.3745C28.602 15.1507 28.3169 14.9983 28.0065 14.9366C27.6962 14.8749 27.3745 14.9066 27.0821 15.0277C26.7897 15.1488 26.5398 15.3538 26.364 15.617C26.1882 15.8801 26.0944 16.1894 26.0944 16.5059C26.0944 16.9302 26.263 17.3372 26.563 17.6372C26.8631 17.9373 27.27 18.1059 27.6944 18.1059ZM20.4644 27.7059C17.2462 27.653 14.1223 28.7929 11.6944 30.9059V29.3059C14.1223 27.1929 17.2462 26.053 20.4644 26.1059C23.6992 26.0618 26.8389 27.1996 29.2944 29.3059V30.9059C26.8389 28.7996 23.6992 27.6618 20.4644 27.7059Z" fill="#4BD93B"/>
+            <path d="M20.4944 41.0055C15.7648 41.003 11.1814 39.3656 7.52077 36.3707C3.86016 33.3758 1.34744 29.2075 0.408314 24.572C-0.530811 19.9365 0.16141 15.1189 2.3677 10.9353C4.57399 6.75178 8.15868 3.45958 12.5144 1.61648C17.5241 -0.499947 23.1694 -0.539606 28.2083 1.50623C33.2472 3.55206 37.267 7.51581 39.3834 12.5255C41.4999 17.5352 41.5395 23.1804 39.4937 28.2193C37.4479 33.2582 33.4841 37.2781 28.4744 39.3945C25.9499 40.4629 23.2357 41.0108 20.4944 41.0055ZM20.4944 1.00548C16.6377 1.00548 12.8676 2.14914 9.66083 4.29182C6.45407 6.43451 3.9547 9.47999 2.47879 13.0432C1.00289 16.6063 0.61672 20.5271 1.36913 24.3097C2.12154 28.0924 3.97874 31.5669 6.70586 34.2941C9.43299 37.0212 12.9076 38.8784 16.6902 39.6308C20.4728 40.3832 24.3936 39.997 27.9568 38.5211C31.5199 37.0452 34.5654 34.5459 36.7081 31.3391C38.8508 28.1323 39.9944 24.3622 39.9944 20.5055C39.9886 15.3355 37.9323 10.379 34.2766 6.72333C30.6209 3.06763 25.6644 1.0113 20.4944 1.00548ZM20.4944 39.4055C15.8237 39.3998 11.3216 37.6596 7.86136 34.5224C4.40112 31.3851 2.22944 27.0745 1.76758 22.4267C1.30571 17.7789 2.58659 13.1252 5.36175 9.3683C8.13691 5.61143 12.2085 3.01921 16.7868 2.09447C21.365 1.16974 26.1236 1.97841 30.1393 4.36361C34.1551 6.74882 37.1418 10.5405 38.5201 15.0032C39.8985 19.4659 39.5701 24.2815 37.5988 28.5159C35.6275 32.7502 32.1538 36.1014 27.8514 37.9195C25.5241 38.9048 23.0218 39.4102 20.4944 39.4055ZM20.4944 2.60548C16.9542 2.60548 13.4934 3.6553 10.5497 5.62217C7.6061 7.58905 5.31181 10.3846 3.957 13.6554C2.60219 16.9262 2.24771 20.5253 2.93839 23.9976C3.62906 27.4699 5.33387 30.6593 7.83723 33.1627C10.3406 35.6661 13.5301 37.3709 17.0023 38.0615C20.4746 38.7522 24.0737 38.3977 27.3445 37.0429C30.6153 35.6881 33.4109 33.3938 35.3778 30.4502C37.3446 27.5065 38.3944 24.0458 38.3944 20.5055C38.3892 15.7597 36.5016 11.2099 33.1458 7.85412C29.7901 4.49836 25.2402 2.61077 20.4944 2.60548ZM11.1944 32.1055V29.0985L11.3404 28.9525C12.0654 28.2839 12.8774 27.7165 13.7544 27.2655C15.821 26.17 18.1255 25.5999 20.4644 25.6055C22.8118 25.6023 25.1246 26.1714 27.2024 27.2635C28.0875 27.7145 28.9087 28.2812 29.6444 28.9485L29.7944 29.0955V32.0955L28.9444 31.2615C28.2658 30.655 27.5111 30.1393 26.6994 29.7275C24.7745 28.7241 22.6352 28.2019 20.4644 28.2055C18.3046 28.2001 16.1762 28.7226 14.2644 29.7275C13.4621 30.1383 12.7177 30.6534 12.0504 31.2595L11.1944 32.1055ZM20.4634 27.2055C22.8108 27.2023 25.1236 27.7714 27.2014 28.8635C27.7549 29.1554 28.2869 29.4862 28.7934 29.8535V29.5275C28.1495 28.9842 27.4468 28.5146 26.6984 28.1275C24.7738 27.1243 22.6348 26.602 20.4644 26.6055C18.3046 26.6002 16.1763 27.1226 14.2644 28.1275C13.5246 28.5142 12.8311 28.9839 12.1974 29.5275V29.8475C12.6934 29.4841 13.2148 29.1566 13.7574 28.8675C15.8229 27.7717 18.1253 27.201 20.4634 27.2055ZM27.6934 18.6055C27.2781 18.6053 26.8722 18.482 26.527 18.2511C26.1818 18.0202 25.9128 17.6922 25.754 17.3084C25.5952 16.9247 25.5538 16.5025 25.6349 16.0952C25.7161 15.6879 25.9161 15.3138 26.2099 15.0202C26.5036 14.7266 26.8778 14.5267 27.2851 14.4458C27.6925 14.3648 28.1146 14.4065 28.4983 14.5654C28.882 14.7244 29.2099 14.9936 29.4406 15.3389C29.6713 15.6842 29.7944 16.0902 29.7944 16.5055C29.7944 17.0624 29.5732 17.5966 29.1794 17.9904C28.7855 18.3842 28.2514 18.6055 27.6944 18.6055H27.6934ZM27.6934 15.4055C27.4759 15.4057 27.2634 15.4704 27.0826 15.5913C26.9018 15.7123 26.761 15.8842 26.6779 16.0852C26.5948 16.2862 26.5731 16.5074 26.6157 16.7207C26.6583 16.934 26.7631 17.1299 26.917 17.2836C27.0709 17.4374 27.2669 17.5421 27.4802 17.5844C27.6936 17.6268 27.9147 17.6049 28.1156 17.5217C28.3166 17.4384 28.4883 17.2974 28.6091 17.1165C28.73 16.9356 28.7944 16.723 28.7944 16.5055C28.7944 16.2137 28.6786 15.934 28.4723 15.7277C28.266 15.5214 27.9862 15.4055 27.6944 15.4055H27.6934ZM13.2944 18.6055C12.8791 18.6055 12.4731 18.4823 12.1277 18.2516C11.7824 18.0208 11.5132 17.6928 11.3543 17.3091C11.1954 16.9254 11.1538 16.5032 11.2348 16.0958C11.3158 15.6884 11.5158 15.3142 11.8095 15.0206C12.1032 14.7269 12.4774 14.5269 12.8848 14.4458C13.2921 14.3648 13.7144 14.4064 14.0981 14.5653C14.4818 14.7243 14.8098 14.9934 15.0405 15.3388C15.2713 15.6841 15.3944 16.0901 15.3944 16.5055C15.3944 17.0624 15.1732 17.5966 14.7794 17.9904C14.3855 18.3842 13.8514 18.6055 13.2944 18.6055ZM13.2944 15.4055C13.0769 15.4055 12.8642 15.47 12.6833 15.5909C12.5024 15.7117 12.3614 15.8835 12.2782 16.0845C12.1949 16.2855 12.1731 16.5067 12.2156 16.7201C12.258 16.9335 12.3628 17.1295 12.5166 17.2833C12.6705 17.4371 12.8665 17.5419 13.0798 17.5843C13.2932 17.6268 13.5144 17.605 13.7154 17.5217C13.9164 17.4385 14.0882 17.2975 14.2091 17.1166C14.3299 16.9357 14.3944 16.723 14.3944 16.5055C14.3944 16.2137 14.2786 15.934 14.0723 15.7277C13.866 15.5214 13.5862 15.4055 13.2944 15.4055Z" fill="#4BD93B"/>
+          </svg>
+        </div>
+        <p class="info-text">
+          If you encounter an error or a bug with a file or<br>
+          the software, please send us an bug report.
+        </p>
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+        <p class="description">
+          This will help us improve our software and ensure the best user experience. Bugs and errors are fixed on a regular basis through the software updates.
+        </p>
+
+        <label class="label">Please tell us more</label>
+
+        <textarea class="textarea" id="description" placeholder="Describe the issue...">Lorem Ipsum problem description please give us as much details as ipsum dolor sit amet. problem description please give us as much dolor sit amet. problem description please give us as much details</textarea>
+
+        <input type="email" class="email-input" id="email" value="maria.sokolovskaya@avanquest.com">
+
+        <p class="privacy-text">
+          The information you provide will be handled in accordance with our <span class="privacy-link" id="privacyLink">Privacy Policy</span>
+        </p>
+
+        <div class="button-group">
+          <button class="button button-dont-send" id="dontSendButton">Don't Send</button>
+          <button class="button button-send" id="sendButton">Send Report</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Bridge function for communicating with Sciter host
+      async function safeCall(method, payload) {
+        if (!window.jsBridgeCall) {
+          console.log('❌ jsBridgeCall not found');
+          return;
+        }
+        try {
+          const res = await window.jsBridgeCall(method, payload);
+          console.log('➡️', method, payload);
+          console.log('⬅️', res);
+          return res;
+        } catch (error) {
+          console.error('Bridge call error:', error);
+        }
+      }
+
+      // Initialize
+      window.addEventListener('load', () => {
+        safeCall('template:onReady', { type: 'bug_report', ts: Date.now() });
+
+        // Report dialog size to Sciter host
+        const dialog = document.querySelector('.bug-report-dialog');
+        if (dialog) {
+          setTimeout(() => {
+            const width = dialog.offsetWidth;
+            const height = dialog.offsetHeight;
+            safeCall('template:onSize', { width, height });
+          }, 100);
+        }
+      });
+
+      // Close button
+      document.getElementById('closeButton').addEventListener('click', () => {
+        safeCall('template:onAction', { action: 'close_webview' });
+      });
+
+      // Don't Send button
+      document.getElementById('dontSendButton').addEventListener('click', () => {
+        safeCall('template:onAction', { action: 'dont_send' });
+      });
+
+      // Send Report button
+      document.getElementById('sendButton').addEventListener('click', () => {
+        const description = document.getElementById('description').value;
+        const email = document.getElementById('email').value;
+        safeCall('template:onAction', {
+          action: 'send_report',
+          description: description,
+          email: email
+        });
+      });
+
+      // Privacy Policy link
+      document.getElementById('privacyLink').addEventListener('click', () => {
+        safeCall('template:onAction', { action: 'open_privacy_policy' });
+      });
+    </script>
+  </body>
+</html>
