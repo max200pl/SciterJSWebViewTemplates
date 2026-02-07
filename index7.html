@@ -1,0 +1,373 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Application Error</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: transparent;
+      }
+
+      body {
+        font-family: 'Roboto', 'Segoe UI', system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* Container */
+      .error-dialog {
+        width: 480px;
+        border: 1px solid #ccc;
+        background: white;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Header */
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 15px;
+        border-bottom: 1px solid #e0e0e0;
+        flex-shrink: 0;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+      }
+
+      .logo {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+      }
+
+      .logo svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .brand-name {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+        font-size: 15px;
+        line-height: normal;
+        color: black;
+        margin: 0;
+        flex-shrink: 0;
+        font-variation-settings: 'wdth' 100;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+      }
+
+      .settings-button {
+        width: 16px;
+        height: 17px;
+        background: transparent;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .settings-button svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .settings-button:hover {
+        opacity: 0.7;
+      }
+
+      .close-button {
+        width: 12px;
+        height: 12px;
+        background: transparent;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .close-button svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .close-button:hover {
+        opacity: 0.7;
+      }
+
+      /* Content */
+      .content {
+        display: flex;
+        flex-direction: column;
+        padding: 20px 25px 25px 25px;
+        gap: 15px;
+        flex-shrink: 0;
+      }
+
+      .error-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+      }
+
+      .error-icon {
+        width: 35px;
+        height: 35px;
+        flex-shrink: 0;
+      }
+
+      .error-icon svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .error-info {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        flex: 1;
+      }
+
+      .error-label {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+        font-size: 15px;
+        line-height: normal;
+        color: rgba(0, 0, 0, 0.8);
+        margin: 0;
+        font-variation-settings: 'wdth' 100;
+      }
+
+      .error-title {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 700;
+        font-size: 18px;
+        line-height: normal;
+        color: black;
+        margin: 0;
+        font-variation-settings: 'wdth' 100;
+      }
+
+      .error-date {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+        font-size: 15px;
+        line-height: normal;
+        color: rgba(0, 0, 0, 0.8);
+        margin: 0;
+        font-variation-settings: 'wdth' 100;
+      }
+
+      .error-description {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+        font-size: 15px;
+        line-height: 1.5;
+        color: rgba(0, 0, 0, 0.8);
+        margin: 0;
+        font-variation-settings: 'wdth' 100;
+      }
+
+      .button-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+      }
+
+      .open-button {
+        width: 189px;
+        height: 44px;
+        background: #00c853;
+        border: none;
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: normal;
+        color: white;
+        cursor: pointer;
+        font-variation-settings: 'wdth' 100;
+        flex-shrink: 0;
+      }
+
+      .open-button:hover {
+        background: #00b248;
+      }
+
+      .stop-link {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+        font-size: 13px;
+        line-height: normal;
+        color: #2375be;
+        text-align: left;
+        margin: 5px 0 0 0;
+        cursor: pointer;
+        text-decoration: none;
+        font-variation-settings: 'wdth' 100;
+      }
+
+      .stop-link:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="error-dialog">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-left">
+          <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <mask id="mask0_40_1535" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+                <path d="M23.606 0H0V24H23.606V0Z" fill="white"/>
+              </mask>
+              <g mask="url(#mask0_40_1535)">
+                <path d="M18.2289 5.85699C19.5771 7.59215 20.2606 9.75212 20.1559 11.947C20.1579 12.4464 20.1133 12.9448 20.0229 13.436C20.0309 13.272 20.0409 13.105 20.0369 12.936C20.0629 10.43 19.1942 7.99685 17.5869 6.07399C16.3509 6.64899 14.9809 8.91898 15.8539 11.93C16.3029 13.479 17.3369 14.482 17.7829 15.997C18.1851 17.4227 18.4078 18.8931 18.4459 20.374C18.4459 20.374 23.3249 16.569 23.5879 12.397C23.9279 7.00598 19.7699 5.68898 18.2299 5.85998" fill="#9CCB3B"/>
+                <path d="M5.37792 17.7709C4.02974 16.0357 3.34628 13.8758 3.45092 11.6809C3.44899 11.1815 3.49352 10.683 3.58392 10.1919C3.57592 10.3559 3.56592 10.5229 3.56992 10.6919C3.5439 13.1979 4.41262 15.631 6.01992 17.5539C7.25592 16.9789 8.62592 14.7089 7.75292 11.6979C7.30392 10.1489 6.26992 9.14591 5.82392 7.63091C5.4218 6.20515 5.19908 4.7348 5.16092 3.25391C5.16092 3.25391 0.282922 7.06191 0.0199219 11.2339C-0.320078 16.6249 3.83792 17.9419 5.37792 17.7709Z" fill="#6CB545"/>
+                <path d="M5.69591 5.4527C7.41461 4.08379 9.56608 3.37444 11.7619 3.4527C12.2614 3.44439 12.7605 3.48255 13.2529 3.5667C13.0889 3.5607 12.9209 3.5527 12.7529 3.5587C10.2467 3.56408 7.82452 4.4633 5.92191 6.0947C6.51191 7.3227 8.79991 8.6647 11.7999 7.7547C13.3439 7.2867 14.3329 6.2397 15.8429 5.7747C17.2634 5.35466 18.7307 5.11346 20.2109 5.0567C20.2109 5.0567 16.3399 0.223697 12.1649 0.0126967C6.76992 -0.259303 5.50591 3.9127 5.69591 5.4527Z" fill="#B5D729"/>
+                <path d="M17.8009 18.5476C16.0822 19.9165 13.9307 20.6258 11.7349 20.5476C11.2354 20.5559 10.7363 20.5177 10.2439 20.4336C10.4079 20.4396 10.5759 20.4476 10.7439 20.4416C13.2501 20.4362 15.6723 19.537 17.5749 17.9056C16.9849 16.6776 14.6969 15.3356 11.6969 16.2456C10.1529 16.7136 9.16389 17.7606 7.65389 18.2256C6.23341 18.6456 4.76608 18.8868 3.28589 18.9436C3.28589 18.9436 7.15189 23.7746 11.3269 23.9846C16.7219 24.2566 17.9859 20.0846 17.7959 18.5446" fill="#84C529"/>
+              </g>
+            </svg>
+          </div>
+          <p class="brand-name">PC Helpsoft PC Cleaner</p>
+        </div>
+        <div class="header-right">
+          <button class="settings-button" id="settingsButton" aria-label="Settings">
+            <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g opacity="0.7">
+                <path d="M14.5223 5.04981L13.9453 4.04981C13.7922 3.78493 13.5402 3.59168 13.2447 3.51255C12.9492 3.43341 12.6343 3.47487 12.3693 3.62781L12.0693 3.80281C11.806 3.95565 11.5071 4.03634 11.2026 4.03675C10.8982 4.03715 10.599 3.95725 10.3353 3.80512C10.0716 3.65298 9.8527 3.43398 9.70065 3.17022C9.54861 2.90645 9.46883 2.60726 9.46934 2.30281V1.95381C9.46934 1.80193 9.43936 1.65154 9.38112 1.51127C9.32287 1.371 9.23751 1.2436 9.12993 1.13639C9.02235 1.02918 8.89466 0.944262 8.75419 0.886504C8.61372 0.828746 8.46322 0.799285 8.31134 0.799812H7.15734C6.85128 0.799812 6.55776 0.921394 6.34134 1.13781C6.12492 1.35423 6.00334 1.64775 6.00334 1.95381V2.29981C6.00345 2.60367 5.92357 2.9022 5.77174 3.1654C5.6199 3.42861 5.40146 3.6472 5.13836 3.79922C4.87527 3.95124 4.57679 4.03133 4.27293 4.03143C3.96907 4.03154 3.67054 3.95165 3.40734 3.79981L3.10734 3.62481C2.84237 3.47187 2.52751 3.43041 2.23198 3.50955C1.93645 3.58868 1.68444 3.78193 1.53134 4.04681L0.954342 5.04681C0.801404 5.31178 0.759945 5.62664 0.839078 5.92217C0.918212 6.2177 1.11146 6.46972 1.37634 6.62281L1.67634 6.79781C1.93992 6.94962 2.15883 7.16819 2.31105 7.43152C2.46327 7.69486 2.54342 7.99365 2.54342 8.29781C2.54342 8.60197 2.46327 8.90077 2.31105 9.1641C2.15883 9.42743 1.93992 9.64601 1.67634 9.79781L1.37634 9.97281C1.11146 10.1259 0.918212 10.3779 0.839078 10.6734C0.759945 10.969 0.801404 11.2838 0.954342 11.5488L1.53134 12.5488C1.68444 12.8137 1.93645 13.0069 2.23198 13.0861C2.52751 13.1652 2.84237 13.1237 3.10734 12.9708L3.40734 12.7958C3.67064 12.643 3.9696 12.5623 4.27404 12.5619C4.57849 12.5615 4.87766 12.6414 5.14136 12.7935C5.40507 12.9456 5.62399 13.1646 5.77603 13.4284C5.92807 13.6922 6.00786 13.9914 6.00734 14.2958V14.6468C6.00761 14.952 6.12875 15.2447 6.34428 15.4608C6.5598 15.6768 6.85215 15.7988 7.15734 15.7998H8.31134C8.6174 15.7998 8.91093 15.6782 9.12734 15.4618C9.34376 15.2454 9.46534 14.9519 9.46534 14.6458V14.2998C9.46482 13.9954 9.54461 13.6962 9.69665 13.4324C9.8487 13.1686 10.0676 12.9496 10.3313 12.7975C10.595 12.6454 10.8942 12.5655 11.1986 12.5659C11.5031 12.5663 11.802 12.647 12.0653 12.7998L12.3653 12.9748C12.6303 13.1277 12.9452 13.1692 13.2407 13.0901C13.5362 13.0109 13.7882 12.8177 13.9413 12.5528L14.5183 11.5528C14.6713 11.2878 14.7127 10.973 14.6336 10.6774C14.5545 10.3819 14.3612 10.1299 14.0963 9.97681L13.7923 9.79981C13.5288 9.64801 13.3098 9.42943 13.1576 9.1661C13.0054 8.90277 12.9253 8.60397 12.9253 8.29981C12.9253 7.99565 13.0054 7.69686 13.1576 7.43352C13.3098 7.17019 13.5288 6.95162 13.7923 6.79981L14.0923 6.62481C14.2241 6.54977 14.3398 6.44946 14.4328 6.32964C14.5258 6.20982 14.5942 6.07283 14.6341 5.92653C14.6741 5.78022 14.6847 5.62748 14.6656 5.47703C14.6464 5.32659 14.5977 5.18141 14.5223 5.04981Z" stroke="black" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7.61729 9.74629C8.39048 9.74629 9.01729 9.11949 9.01729 8.34629C9.01729 7.57309 8.39048 6.94629 7.61729 6.94629C6.84409 6.94629 6.21729 7.57309 6.21729 8.34629C6.21729 9.11949 6.84409 9.74629 7.61729 9.74629Z" fill="black"/>
+              </g>
+            </svg>
+          </button>
+          <button class="close-button" id="closeButton" aria-label="Close">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g opacity="0.7">
+                <path d="M11.9997 10.7141L1.28564 0L0.000124454 1.28552L10.7142 11.9996L11.9997 10.7141Z" fill="black"/>
+                <path d="M1.28543 12.0002L11.9995 1.28613L10.714 0.000612735L-9.04257e-05 10.7147L1.28543 12.0002Z" fill="black"/>
+              </g>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+        <div class="error-header">
+          <div class="error-icon">
+            <svg width="35" height="35" viewBox="0 0 35 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17.5 33.5C26.3366 33.5 33.5 26.3366 33.5 17.5C33.5 8.66344 26.3366 1.5 17.5 1.5C8.66344 1.5 1.5 8.66344 1.5 17.5C1.5 26.3366 8.66344 33.5 17.5 33.5Z" stroke="#FF1919" stroke-width="3"/>
+              <path d="M23.5 22.2141L12.7859 11.5L11.5004 12.7855L22.2145 23.4996L23.5 22.2141Z" fill="#FF1819"/>
+              <path d="M24.2071 22.2142L12.7859 10.793L10.7933 12.7856L22.2145 24.2068L24.2071 22.2142Z" stroke="#FF1819"/>
+              <path d="M12.7859 23.5002L23.5 12.7861L22.2145 11.5006L11.5004 22.2147L12.7859 23.5002Z" fill="#FF1819"/>
+              <path d="M12.7858 24.2073L24.207 12.7861L22.2144 10.7935L10.7932 22.2147L12.7858 24.2073Z" stroke="#FF1819"/>
+            </svg>
+          </div>
+
+          <div class="error-info">
+            <p class="error-label">Application crash</p>
+            <p class="error-title">Application Error</p>
+            <p class="error-date">Tuesday, June 16, 2022</p>
+          </div>
+        </div>
+
+        <p class="error-description">
+          This can happen due to problems with the application,<br>
+          insufficient disk space or Windows issues.<br>
+          Run a stability report in PC Cleaner Pro.
+        </p>
+
+        <div class="button-container">
+          <button class="open-button" id="openButton">Open Report</button>
+        </div>
+
+        <a href="#" class="stop-link" id="stopLink">Stop showing notifications</a>
+      </div>
+    </div>
+
+    <script>
+      // Bridge function for communicating with Sciter host
+      async function safeCall(method, payload) {
+        if (!window.jsBridgeCall) {
+          console.log('❌ jsBridgeCall not found');
+          return;
+        }
+        try {
+          const res = await window.jsBridgeCall(method, payload);
+          console.log('➡️', method, payload);
+          console.log('⬅️', res);
+          return res;
+        } catch (error) {
+          console.error('Bridge call error:', error);
+        }
+      }
+
+      // Initialize
+      window.addEventListener('load', () => {
+        safeCall('template:onReady', { type: 'application_error', ts: Date.now() });
+
+        // Report dialog size to Sciter host
+        const dialog = document.querySelector('.error-dialog');
+        if (dialog) {
+          setTimeout(() => {
+            const width = dialog.offsetWidth;
+            const height = dialog.offsetHeight;
+            safeCall('template:onSize', { width, height });
+          }, 100);
+        }
+      });
+
+      // Close button
+      document.getElementById('closeButton').addEventListener('click', () => {
+        safeCall('template:onAction', { action: 'close_webview' });
+      });
+
+      // Settings button
+      document.getElementById('settingsButton').addEventListener('click', () => {
+        safeCall('template:onAction', { action: 'open_settings' });
+      });
+
+      // Open Report button
+      document.getElementById('openButton').addEventListener('click', () => {
+        safeCall('template:onAction', { action: 'open_report' });
+      });
+
+      // Stop showing notifications link
+      document.getElementById('stopLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        safeCall('template:onAction', { action: 'stop_notifications' });
+      });
+    </script>
+  </body>
+</html>
