@@ -1,3 +1,4 @@
+export const templateHtml = `
 <html>
   <head>
     <meta charset="utf-8" />
@@ -17,11 +18,7 @@
       }
 
       body {
-        font-family:
-          "Roboto",
-          system-ui,
-          -apple-system,
-          sans-serif;
+        font-family: 'Roboto', system-ui, -apple-system, sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
       }
@@ -45,13 +42,13 @@
       }
 
       .header-text {
-        font-family: "Roboto", sans-serif;
+        font-family: 'Roboto', sans-serif;
         font-weight: 400;
         font-size: 14px;
         line-height: normal;
         color: rgba(255, 255, 255, 0.8);
         margin: 0;
-        font-variation-settings: "wdth" 100;
+        font-variation-settings: 'wdth' 100;
       }
 
       .close-button {
@@ -89,23 +86,23 @@
       }
 
       .main-title {
-        font-family: "Roboto", sans-serif;
+        font-family: 'Roboto', sans-serif;
         font-weight: 500;
         font-size: 25px;
         line-height: 1.3;
         color: rgba(0, 0, 0, 0.8);
         margin: 0;
-        font-variation-settings: "wdth" 100;
+        font-variation-settings: 'wdth' 100;
       }
 
       .description {
-        font-family: "Roboto", sans-serif;
+        font-family: 'Roboto', sans-serif;
         font-weight: 400;
         font-size: 16px;
         line-height: 1.4;
         color: black;
         margin: 0;
-        font-variation-settings: "wdth" 100;
+        font-variation-settings: 'wdth' 100;
       }
 
       .chat-link-wrapper {
@@ -114,7 +111,7 @@
       }
 
       .chat-link {
-        font-family: "Roboto", sans-serif;
+        font-family: 'Roboto', sans-serif;
         font-weight: 500;
         font-size: 23px;
         line-height: normal;
@@ -125,7 +122,7 @@
         background: transparent;
         border: none;
         padding: 0;
-        font-variation-settings: "wdth" 100;
+        font-variation-settings: 'wdth' 100;
       }
 
       .chat-link:hover {
@@ -147,7 +144,7 @@
       }
 
       .checkbox-label {
-        font-family: "Roboto", sans-serif;
+        font-family: 'Roboto', sans-serif;
         font-weight: 400;
         font-size: 13px;
         line-height: normal;
@@ -155,7 +152,7 @@
         cursor: pointer;
         user-select: none;
         margin: 0;
-        font-variation-settings: "wdth" 100;
+        font-variation-settings: 'wdth' 100;
       }
     </style>
   </head>
@@ -166,17 +163,8 @@
       <div class="header">
         <p class="header-text">PC Helpsoft PC Cleaner Recommends</p>
         <button class="close-button" id="closeButton" aria-label="Close">
-          <svg
-            viewBox="0 0 14 14"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M1 1L13 13M13 1L1 13"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-            />
+          <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
         </button>
       </div>
@@ -184,21 +172,21 @@
       <!-- Content -->
       <div class="content">
         <h1 class="main-title">
-          Still having performance problems<br />
+          Still having performance problems<br>
           with your computer?
         </h1>
 
         <p class="description">
-          Our agents are standing by Chat wan us now to see how we<br />
+          Our agents are standing by Chat wan us now to see how we<br>
           can help resolve your PC issues.
         </p>
 
         <div class="chat-link-wrapper">
-          <button class="chat-link" id="chatButton">Chat with us now</button>
+          <button class="chat-link" id="chatButton">CHAT NOW</button>
         </div>
 
         <div class="checkbox-container">
-          <input type="checkbox" class="checkbox" id="doNotShowAgain" />
+          <input type="checkbox" class="checkbox" id="doNotShowAgain">
           <label class="checkbox-label" for="doNotShowAgain">
             Do not show this windows again
           </label>
@@ -210,58 +198,56 @@
       // Bridge function for communicating with Sciter host
       async function safeCall(method, payload) {
         if (!window.jsBridgeCall) {
-          console.log("❌ jsBridgeCall not found");
+          console.log('❌ jsBridgeCall not found');
           return;
         }
         try {
           const res = await window.jsBridgeCall(method, payload);
-          console.log("➡️", method, payload);
-          console.log("⬅️", res);
+          console.log('➡️', method, payload);
+          console.log('⬅️', res);
           return res;
         } catch (error) {
-          console.error("Bridge call error:", error);
+          console.error('Bridge call error:', error);
         }
       }
 
       // Initialize
-      window.addEventListener("load", () => {
-        safeCall("template:onReady", { type: "chat_now", ts: Date.now() });
+      window.addEventListener('load', () => {
+        safeCall('template:onReady', { type: 'chat_now', ts: Date.now() });
 
         // Report dialog size to Sciter host
-        const dialog = document.querySelector(".chat-dialog");
+        const dialog = document.querySelector('.chat-dialog');
         if (dialog) {
           setTimeout(() => {
             const width = dialog.offsetWidth;
             const height = dialog.offsetHeight;
-            safeCall("template:onSize", { width, height });
+            safeCall('template:onSize', { width, height });
           }, 100);
         }
       });
 
       // Close button
-      document.getElementById("closeButton").addEventListener("click", () => {
-        safeCall("template:onAction", { action: "close_webview" });
+      document.getElementById('closeButton').addEventListener('click', () => {
+        safeCall('template:onAction', { action: 'close_webview' });
       });
 
       // Chat button
-      document.getElementById("chatButton").addEventListener("click", () => {
-        const doNotShowAgain =
-          document.getElementById("doNotShowAgain").checked;
-        safeCall("template:onAction", {
-          action: "chat_now",
-          doNotShowAgain: doNotShowAgain,
+      document.getElementById('chatButton').addEventListener('click', () => {
+        const doNotShowAgain = document.getElementById('doNotShowAgain').checked;
+        safeCall('template:onAction', {
+          action: 'chat_now',
+          doNotShowAgain: doNotShowAgain
         });
       });
 
       // Checkbox change
-      document
-        .getElementById("doNotShowAgain")
-        .addEventListener("change", (e) => {
-          safeCall("template:onAction", {
-            action: "checkbox_changed",
-            checked: e.target.checked,
-          });
+      document.getElementById('doNotShowAgain').addEventListener('change', (e) => {
+        safeCall('template:onAction', {
+          action: 'checkbox_changed',
+          checked: e.target.checked
         });
+      });
     </script>
   </body>
 </html>
+`;
