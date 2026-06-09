@@ -5,7 +5,7 @@
   window-height="max-content"
 >
   <head>
-    <title>Sciter WebView Bridge Test</title>
+    <title>Sciter WebView Bridge</title>
     <meta charset="utf-8" />
     <style>
       html {
@@ -28,7 +28,7 @@
 
       main {
         width: *;
-        height: 100%%;
+        height: 100%;
       }
 
       webview {
@@ -39,9 +39,14 @@
         behavior: webview library(sciter-webview);
       }
 
+      /* dev-only controls: absolute OVERLAY so they don't steal height from the
+         <webview> (otherwise the notification card gets clipped at the bottom). */
       .panel {
-        left: 0;
-        gap: 8dip;
+        position: absolute;
+        top: 8dip;
+        right: 8dip;
+        flow: vertical;
+        gap: 6dip;
         background: #ffffffcc;
         padding: 8dip;
         border-radius: 6dip;
@@ -52,177 +57,68 @@
       }
     </style>
 
+    <!--
+      Live host for the unified notification bridge (Step 9b).
+      Thin glue: build a NotificationSpec and hand it to the bridge. All logic lives
+      in ./bridge/* (see ./bridge/README.md). The legacy self-rendering demo is
+      preserved at ./index-legacy.html (loaded by Templates.js).
+    -->
     <script type="module">
-      import { templateHtml } from "C:\\____WORK____\\web-view-test 2\\Templates\\Templates.js";
+      // Single import-free bundle via absolute path. Sciter can't resolve relative
+      // imports when the document path contains a space ("web-view-test 2") — its base
+      // URL is malformed and "./x.js" stays literal. The bundle has no inner imports,
+      // so no relative resolution is needed (rebuild: `node bridge/build-bundle.mjs`).
+      import { showNotification, notificationTemplate } from "C:\\____WORK____\\web-view-test 2\\Templates\\bridge\\bundle.js";
 
       document.on("ready", () => {
         const elemWebView = document.$("webview");
+        let handle = null;
 
-        // ===== Helper: Sciter -> WebView =====
-        function sendToTemplate(msg) {
-          const js = `window.__fromSciter(${JSON.stringify(msg)})`;
-          console.log("➡️ to template:", msg);
-          elemWebView.webview.evaluateJavaScript(js);
-        }
-
-        // ===== Bridge: WebView -> Sciter =====
-        elemWebView.jsBridgeCall = (params) => {
-          try {
-            const method = params?.[0];
-            const payload = params?.[1];
-
-            console.log("⬅️ jsBridgeCall:", method, payload);
-
-            switch (method) {
-              case "template:onReady":
-                console.log("template ready:", payload);
-
-                // ✅ initial command to WebView (includes i18n + lang + payload)
-                setTimeout(() => {
-                  sendToTemplate({
-                    type: "init",
-                    lang: "en",
-                    i18n: {
-                      en: {
-                        title: "Program removed: {programName}",
-                        subtitle: "Leftover files: {count}",
-                        counter: "Live counter",
-                        switch: "Switch language",
-                      },
-                      uk: {
-                        title: "Програму видалено: {programName}",
-                        subtitle: "Залишкових файлів: {count}",
-                        counter: "Лічильник",
-                        switch: "Змінити мову",
-                      },
-                      ru: {
-                        title: "Программа удалена: {programName}",
-                        subtitle: "Остаточных файлов: {count}",
-                        counter: "Счётчик",
-                        switch: "Сменить язык",
-                      },
-                    },
-                    payload: {
-                      programName: "WinZip",
-                      count: 12,
-                    },
-                  });
-                }, 0);
-
-                return JSON.stringify({ ok: true });
-
-              case "template:onAction":
-                if (payload?.action === "close_webview") {
-                  Window.this.close();
-                  return JSON.stringify({ ok: true });
-                }
-
-                if (payload?.action === "cta_click") {
-                  console.log("CTA clicked from template:", payload);
-                  return JSON.stringify({ ok: true });
-                }
-
-                return JSON.stringify({ ok: true });
-
-              case "template:onSize": {
-                // payload: { width, height } from WebView template (.card)
-                console.log("template size:", payload);
-
-                const dimension = Window.this.screenBox(
-                  "workarea",
-                  "dimension",
-                  true,
-                );
-                const [screenW, screenH] = dimension;
-
-                // Пришедшие размеры карточки (px). Делаем safety.
-                let w = Math.max(200, Number(payload?.width) || 0);
-                let h = Math.max(120, Number(payload?.height) || 0);
-
-                // ===== offsets / margins (подгони под себя) =====
-                const margin = 0; // отступ от края workarea
-                const framePad = 0; // если нужно добавить рамку/тень/паддинги окна
-                w = w + framePad;
-                h = h + framePad;
-
-                // bottom-right positioning
-                let x = screenW - w - margin;
-                let y = screenH - h - margin;
-
-                // clamp (на случай если контент больше экрана)
-                if (x < margin) x = margin;
-                if (y < margin) y = margin;
-
-                console.log(`move: x=${x} y=${y} w=${w} h=${h}`);
-
-                Window.this.move(x, y, w, h);
-                Window.this.state = Window.WINDOW_SHOWN;
-
-                return JSON.stringify({ ok: true });
-              }
-
-              default:
-                return JSON.stringify({
-                  ok: false,
-                  error: "Unknown method",
-                  method,
-                });
-            }
-          } catch (e) {
-            return JSON.stringify({
-              ok: false,
-              error: String(e),
-            });
-          }
+        const spec = {
+          template: notificationTemplate,
+          lang: "en",
+          data: { programName: "WinZip", count: 12 },
+          i18n: {
+            en: { title: "Program removed: {programName}", subtitle: "Leftover files: {count}", counter: "Live counter", cta: "CTA", close: "Close" },
+            uk: { title: "Програму видалено: {programName}", subtitle: "Залишкових файлів: {count}", counter: "Лічильник", cta: "CTA", close: "Закрити" },
+            ru: { title: "Программа удалена: {programName}", subtitle: "Остаточных файлов: {count}", counter: "Счётчик", cta: "CTA", close: "Закрыть" },
+          },
+          actions: [
+            { id: "cta_click" },
+            { id: "close_webview", closes: true },
+          ],
+          // hideAfterMs: 8000,  // uncomment to demo auto-hide
+          on: {
+            onReady: (info) => console.log("bridge onReady", info),
+            onAction: (ev) => console.log("bridge onAction", ev), // <- forward to C++ here if needed
+            onClose: (reason) => console.log("bridge onClose", reason),
+            onLocalizationChanged: (c) => console.log("bridge onLocalizationChanged", c),
+            onError: (err) => console.log("bridge onError", err),
+          },
         };
 
-        // ===== Load template =====
         elemWebView.on("webview-ready", () => {
           console.log("webview init success");
-          elemWebView.webview.loadHtml(templateHtml);
+          handle = showNotification({ elemWebView, win: Window }, spec);
         });
 
         elemWebView.on("webview-unavailable", () => {
           console.log("webview init failure");
         });
 
-        // ===== UI buttons =====
-        document.on("click", "#langEN", () =>
-          sendToTemplate({ type: "setLang", lang: "en" }),
-        );
-        document.on("click", "#langUK", () =>
-          sendToTemplate({ type: "setLang", lang: "uk" }),
-        );
-        document.on("click", "#langRU", () =>
-          sendToTemplate({ type: "setLang", lang: "ru" }),
-        );
+        // ===== Dev panel: drive the live handle (parity with the legacy demo) =====
+        document.on("click", "#langEN", () => handle && handle.setLang("en"));
+        document.on("click", "#langUK", () => handle && handle.setLang("uk"));
+        document.on("click", "#langRU", () => handle && handle.setLang("ru"));
         document.on("click", "#updatePayload", () =>
-          sendToTemplate({
-            type: "update",
-            payload: {
-              programName: "Adobe Reader",
-              count: 27,
-            },
-          }),
+          handle && handle.update({ programName: "Adobe Reader", count: 27 }),
         );
         document.on("click", "#updateI18n", () =>
-        sendToTemplate({
-            type: "setI18n",
-            i18n: {
-                ru: {
-                    title: "🚀 RU from Sciter: {programName}",
-                    subtitle: "🧹 Осталось файлов: {count}",
-                    counter: "Счётчик (SCITER)",
-                    switch: "Сменить язык",
-                },
-                en: {
-                    title: "🚀 EN from Sciter: {programName}",
-                    subtitle: "🧹 Files left: {count}",
-                    counter: "Counter (SCITER)",
-                    switch: "Switch lang",
-                },
-            },
-        }),
+          handle &&
+          handle.setI18n({
+            en: { title: "🚀 EN from Sciter: {programName}", subtitle: "🧹 Files left: {count}" },
+            ru: { title: "🚀 RU from Sciter: {programName}", subtitle: "🧹 Осталось файлов: {count}" },
+          }),
         );
       });
     </script>
@@ -232,12 +128,11 @@
     <webview></webview>
 
     <div class="panel">
-        <button #langEN>EN</button>
-        <button #langUK>UK</button>
-        <button #langRU>RU</button>
-        <button #updatePayload>Update payload</button>
-        <button #updateI18n>Update i18n</button>
-    </div>
+      <button #langEN>EN</button>
+      <button #langUK>UK</button>
+      <button #langRU>RU</button>
+      <button #updatePayload>Update payload</button>
+      <button #updateI18n>Update i18n</button>
     </div>
   </body>
 </html>
