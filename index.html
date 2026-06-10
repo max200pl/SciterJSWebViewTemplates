@@ -39,8 +39,13 @@
         behavior: webview library(sciter-webview);
       }
 
+      /* dev-only controls: absolute OVERLAY so the WebView (card) fills the whole client
+         area. In-flow it would steal layout height and clip the card's bottom buttons. */
       .panel {
-        flow: horizontal;
+        position: absolute;
+        top: 8dip;
+        right: 8dip;
+        flow: vertical;
         gap: 6dip;
         background: #ffffffcc;
         padding: 8dip;
@@ -76,6 +81,11 @@
         showNotification,
         notificationTemplate,
       } from "C:\\____WORK____\\web-view-test 2\\Templates\\demo\\build\\bundle.js";
+      // `@sciter` is a built-in (bare) specifier — unaffected by the space-in-path
+      // relative-import bug. devicePixels(dips)->physical px lets the bridge convert
+      // the WebView's CSS-px size to the PPX that window.move() requires, so the card
+      // is sized/positioned correctly at non-100% DPI (125/150% etc.) instead of clipped.
+      import { devicePixels } from "@sciter";
 
       document.on("ready", () => {
         const elemWebView = document.$("webview");
@@ -138,7 +148,12 @@
 
         elemWebView.on("webview-ready", () => {
           console.log("webview init success");
-          handle = showNotification({ elemWebView, win: Window }, spec);
+          handle = showNotification(
+            // devicePixels rounds the (possibly fractional) dip size before scaling —
+            // the API takes int dips. At 100% it's identity, so behaviour is unchanged.
+            { elemWebView, win: Window, devicePixels: (n) => devicePixels(Math.round(n)) },
+            spec,
+          );
         });
 
         elemWebView.on("webview-unavailable", () => {

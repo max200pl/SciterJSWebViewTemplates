@@ -62,7 +62,9 @@ export function makeSciterDeps(elemWebView, win, devicePixels) {
     },
     move(x, y, w, h) {
       // window.move() is in physical px (PPX); the bridge computed x/y/w/h in CSS px.
-      win.this.move(toPPX(x), toPPX(y), toPPX(w), toPPX(h));
+      // "client": w/h are the CLIENT-area size, so a solid window's frame/caption is added
+      // OUTSIDE and never clips the WebView card. (For frameless windows it's equivalent.)
+      win.this.move(toPPX(x), toPPX(y), toPPX(w), toPPX(h), "client");
     },
     workarea() {
       // CSS px (asPPX=false) so it matches the WebView's CSS-px size; move() converts to PPX.

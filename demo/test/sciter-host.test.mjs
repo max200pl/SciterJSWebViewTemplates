@@ -33,8 +33,8 @@ function mockWindow() {
     WINDOW_SHOWN: "shown",
     this: {
       state: null,
-      move(x, y, w, h) {
-        calls.push(["move", x, y, w, h]);
+      move(...args) {
+        calls.push(["move", ...args]);
       },
       close() {
         calls.push(["close"]);
@@ -94,7 +94,7 @@ test("windowCtl maps to Sciter Window calls (workarea in CSS px)", () => {
   assert.deepEqual(win.calls.at(-1), ["screenBox", "workarea", "dimension", false], "asPPX=false → CSS px");
 
   windowCtl.move(1470, 660, 450, 420); // no devicePixels → identity
-  assert.deepEqual(win.calls.at(-1), ["move", 1470, 660, 450, 420]);
+  assert.deepEqual(win.calls.at(-1), ["move", 1470, 660, 450, 420, "client"]);
 
   windowCtl.show();
   assert.equal(win.this.state, "shown");
@@ -108,7 +108,7 @@ test("windowCtl.move converts CSS px -> physical px via devicePixels", () => {
   const win = mockWindow();
   const { windowCtl } = makeSciterDeps(wv, win, (n) => n * 1.5); // e.g. 150% DPI
   windowCtl.move(100, 200, 300, 400);
-  assert.deepEqual(win.calls.at(-1), ["move", 150, 300, 450, 600]);
+  assert.deepEqual(win.calls.at(-1), ["move", 150, 300, 450, 600, "client"]);
 });
 
 test("showNotification wires the full path: ready+size -> injected load + show", async () => {
@@ -132,6 +132,6 @@ test("showNotification wires the full path: ready+size -> injected load + show",
 
   assert.deepEqual(wv.loaded, ["<b>Hi</b>"], "injected html loaded");
   assert.equal(win.this.state, "shown", "window shown after ready+size");
-  assert.deepEqual(win.calls.find((c) => c[0] === "move"), ["move", 1470, 660, 450, 420]);
+  assert.deepEqual(win.calls.find((c) => c[0] === "move"), ["move", 1470, 660, 450, 420, "client"]);
   assert.deepEqual(events, [{ lang: "en", width: 450, height: 420 }]);
 });
