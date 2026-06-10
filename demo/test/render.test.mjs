@@ -36,7 +36,7 @@ const idx = (a, type) => a.calls.findIndex((c) => c.type === type);
 test("injects, registers ready BEFORE loading, then resolves on ready", async () => {
   const a = mockAdapter();
   const p = renderNotification(a, {
-    template: "<b>{{t.title}}</b>",
+    template: "<b>{{text.title}}</b>",
     i18n: { en: { title: "Hi" } },
     lang: "en",
   });

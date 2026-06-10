@@ -94,6 +94,8 @@ const DEFAULTS = Object.freeze({
  * An action the template may emit (declared so the host knows its effect).
  * @typedef {Object} NotificationAction
  * @property {string} id      - Identifier carried in `template:onAction` (e.g. "cta_click").
+ * @property {string} [name]  - Stable handle a template can reference via `{{action.NAME}}` to
+ *                              inject this action's `id` into `data-action` (keeps templates generic).
  * @property {boolean} [closes] - If true, activating it closes the window. The ONLY way an action closes.
  */
 
@@ -232,9 +234,11 @@ const TEMPLATE_CLIENT = `
 // (Step 4) which feeds the result to webview.loadHtml.
 //
 // Token convention in a template string:
-//   {{ t.KEY }}    -> i18n[lang][KEY] (fallback en, then KEY) with {field} data
+//   {{ text.KEY }}    -> i18n[lang][KEY] (fallback en, then KEY) with {field} data
 //                     interpolation applied, HTML-escaped.
-//   {{ d.FIELD }}  -> data[FIELD] (missing -> ""), HTML-escaped.
+//   {{ data.FIELD }}  -> data[FIELD] (missing -> ""), HTML-escaped.
+//   {{ action.NAME }}   -> id of the spec.actions entry named NAME (for data-action="..."),
+//                     HTML-escaped. Unknown name -> InjectionError.
 //   {{ lang }}     -> active language code, HTML-escaped.
 //   {{ actions }}  -> JSON array of declared action ids, escaped for a <script> context.
 //   {{ client }}   -> the bridge client JS (template-client), raw — inject inside a <script>.
@@ -245,7 +249,7 @@ const TEMPLATE_CLIENT = `
 //   1. All injected values are escaped (HTML, or script-context for {{actions}}),
 //      closing the latent injection hazard from jsbridge.md §10.3.
 //   2. Replacement is a single left-to-right pass, so a data value that happens
-//      to look like a token (e.g. "{{d.x}}") is NOT re-processed.
+//      to look like a token (e.g. "{{data.x}}") is NOT re-processed.
 
 
 /** Error raised by the injection layer. Maps to onError({ stage: "injection" }). */
@@ -328,6 +332,11 @@ function injectTemplate(spec) {
   }
 
   const actionIds = actions.map((a) => (a && typeof a === "object" ? a.id : a));
+  // name -> id, so a template can reference an action's id by a stable name ({{action.cta}}).
+  const actionIdByName = {};
+  for (const a of actions) {
+    if (a && typeof a === "object" && a.name) actionIdByName[a.name] = a.id;
+  }
 
   return template.replace(/\{\{\s*([^{}]+?)\s*\}\}/g, (_match, tokenRaw) => {
     const token = tokenRaw.trim();
@@ -340,8 +349,16 @@ function injectTemplate(spec) {
     const dotted = /^([a-z]+)\.(\w+)$/.exec(token);
     if (dotted) {
       const [, ns, key] = dotted;
-      if (ns === "t") return interpolate(translate(i18n, lang, key), data);
-      if (ns === "d") return escapeHtml(data[key] ?? "");
+      if (ns === "text") return interpolate(translate(i18n, lang, key), data);
+      if (ns === "data") return escapeHtml(data[key] ?? "");
+      if (ns === "action") {
+        // {{action.NAME}} -> the id of the spec.actions entry named NAME (backend-defined,
+        // so templates stay generic). Unknown name = structural mismatch -> fail loud.
+        if (!(key in actionIdByName)) {
+          throw new InjectionError(`{{action.${key}}}: no action named "${key}" in spec.actions`);
+        }
+        return escapeHtml(actionIdByName[key]);
+      }
     }
 
     throw new InjectionError(`unknown template token "{{${token}}}"`);
@@ -633,12 +650,12 @@ function createNotification(deps, spec) {
 // Demo notification template — a worked example built on the skeleton contract
 // (see skeleton-template.js). Shows the minimal coupling in practice:
 //   - one `data-notify-root` element (window sizes to it),
-//   - host-bound text via {{t.*}} / {{d.*}},
+//   - host-bound text via {{text.*}} / {{data.*}},
 //   - `data-action` on buttons,
 //   - required base CSS via {{styles}} + bridge glue via {{client}} (NO hardcoded selectors here).
 //
-// Tokens consumed by injectTemplate: {{lang}} {{styles}} {{t.title}} {{t.subtitle}}
-// {{t.counter}} {{t.cta}} {{t.close}} {{d.count}} {{client}}.
+// Tokens consumed by injectTemplate: {{lang}} {{styles}} {{text.title}} {{text.subtitle}}
+// {{text.counter}} {{text.cta}} {{text.close}} {{data.count}} {{action.cta}} {{action.close}} {{client}}.
 
 const notificationTemplate = `
 <html lang="{{lang}}">
@@ -659,12 +676,12 @@ const notificationTemplate = `
   <body>
     <!-- content straight in <body> (no wrapper); body is shrink-to-fit via {{styles}} -->
     <div class="card">
-      <h3 class="title">{{t.title}}</h3>
-      <div class="badge"><span class="dot"></span><span>{{t.counter}}</span> <b>{{d.count}}</b></div>
-      <p class="subtitle">{{t.subtitle}}</p>
+      <h3 class="title">{{text.title}}</h3>
+      <div class="badge"><span class="dot"></span><span>{{text.counter}}</span> <b>{{data.count}}</b></div>
+      <p class="subtitle">{{text.subtitle}}</p>
       <div class="row">
-        <button data-action="cta_click">{{t.cta}}</button>
-        <button data-action="close_webview">{{t.close}}</button>
+        <button data-action="{{action.cta}}">{{text.cta}}</button>
+        <button data-action="{{action.close}}">{{text.close}}</button>
       </div>
     </div>
 
@@ -681,7 +698,7 @@ const notificationTemplate = `
 //   1. `{{styles}}` in <head> (host injects the required base CSS — the window sizes
 //      to content automatically; NO wrapper element needed);
 //   2. `{{client}}` once before </body> (host injects the bridge glue);
-//   3. host-bound text via {{t.key}} (localized) / {{d.field}} (raw data); {{lang}} on <html>;
+//   3. host-bound text via {{text.key}} (localized) / {{data.field}} (raw data); {{lang}} on <html>;
 //   4. `data-action="<id>"` (+ optional `data-href`) on clickable elements.
 //
 // Write your content straight into <body>. (Advanced: add `data-notify-root` to an
@@ -696,12 +713,12 @@ const skeletonTemplate = `
     <!-- add your own content styles here -->
   </head>
   <body>
-    <!-- Build the notification here. Examples:
-         <h3>{{t.title}}</h3>
-         <p>{{t.subtitle}}</p>
-         <b>{{d.count}}</b>
-         <button data-action="cta_click">{{t.cta}}</button>
-         <button data-action="close_webview">{{t.close}}</button> -->
+    <!-- Your notification markup goes here. Bind values with tokens (do NOT write
+         token examples with real double-braces in comments — the injector resolves
+         them anyway). See bridge/README.md "Authoring a template":
+           text.KEY   = localized text       data.FIELD = raw data value
+           action.NAME = an action id, for data-action="...". E.g. a button is
+           <button data-action=" action.cta "> text.cta </button>  (drop the spaces, add braces) -->
 
     <!-- Bridge client (host-injected; do not edit). -->
     <script>{{client}}</script>
@@ -729,10 +746,14 @@ const skeletonTemplate = `
  * Build {bridge, windowCtl, scheduler} for a Sciter host page.
  * @param {*} elemWebView - the `<webview>` element (has `.webview.loadHtml`, assignable `.jsBridgeCall`)
  * @param {*} win - the Sciter `Window` global (has `.this.move/close`, `.this.screenBox`, `.WINDOW_SHOWN`)
+ * @param {(n:number)=>number} [devicePixels] - CSS px -> physical px (from `@sciter`); window.move()
+ *   takes PPX. The bridge works in CSS px (matching the WebView's reported size); we convert here.
+ *   Defaults to identity (correct at 100% DPI / for Node tests).
  * @returns {{bridge: object, windowCtl: object, scheduler: object}}
  */
-function makeSciterDeps(elemWebView, win) {
+function makeSciterDeps(elemWebView, win, devicePixels) {
   const handlers = new Map();
+  const toPPX = typeof devicePixels === "function" ? (n) => devicePixels(n) : (n) => n;
 
   // B -> A: single array arg, params[0]=method, params[1]=payload.
   elemWebView.jsBridgeCall = (params) => {
@@ -768,10 +789,12 @@ function makeSciterDeps(elemWebView, win) {
       win.this.close();
     },
     move(x, y, w, h) {
-      win.this.move(x, y, w, h);
+      // window.move() is in physical px (PPX); the bridge computed x/y/w/h in CSS px.
+      win.this.move(toPPX(x), toPPX(y), toPPX(w), toPPX(h));
     },
     workarea() {
-      const d = win.this.screenBox("workarea", "dimension", true);
+      // CSS px (asPPX=false) so it matches the WebView's CSS-px size; move() converts to PPX.
+      const d = win.this.screenBox("workarea", "dimension", false);
       return [d[0], d[1]];
     },
   };
@@ -790,12 +813,12 @@ function makeSciterDeps(elemWebView, win) {
 
 /**
  * Convenience entry for a Sciter host page: wire adapters and show a notification.
- * @param {{elemWebView:*, win:*}} env
+ * @param {{elemWebView:*, win:*, devicePixels?:(n:number)=>number}} env
  * @param {import("./contract.mjs").NotificationSpec} spec
  * @returns {import("./contract.mjs").NotificationHandle}
  */
 function showNotification(env, spec) {
-  return createNotification(makeSciterDeps(env.elemWebView, env.win), spec);
+  return createNotification(makeSciterDeps(env.elemWebView, env.win, env.devicePixels), spec);
 }
 
 export { showNotification, notificationTemplate, skeletonTemplate, TEMPLATE_CLIENT, TEMPLATE_STYLES };

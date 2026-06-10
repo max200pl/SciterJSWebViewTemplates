@@ -41,7 +41,7 @@ test("bundle exposes the public API and behaves end-to-end (mock Sciter env)", a
       i18n: { en: { title: "Removed: {programName}", subtitle: "L: {count}", counter: "C", cta: "CTA", close: "X" } },
       data: { programName: "WinZip", count: 12 },
       lang: "en",
-      actions: [{ id: "cta_click" }, { id: "close_webview", closes: true }],
+      actions: [{ name: "cta", id: "cta_click" }, { name: "close", id: "close_webview", closes: true }],
       on: { onReady: (i) => ready.push(i) },
     },
   );

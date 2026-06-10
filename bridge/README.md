@@ -51,11 +51,15 @@ specific class/markup**:
    to size the window to *it* instead of the whole body.)
 2. `<script>{{client}}</script>` once — the host injects [`core/template-client.mjs`](./core/template-client.mjs)
    (the bridge glue). Authors never write or maintain bridge code.
-3. Host-bound text: `{{t.key}}` (localized, from `spec.i18n`) and `{{d.field}}` (raw, from
+3. Host-bound text: `{{text.key}}` (localized, from `spec.i18n`) and `{{data.field}}` (raw, from
    `spec.data`). `{{lang}}` for `<html lang>`. All auto-escaped.
-4. `data-action="<id>"` (+ optional `data-href="<url>"`) on clickable elements → emits
+4. `data-action="..."` (+ optional `data-href="<url>"`) on clickable elements → emits
    `on.onAction({ id, data })`. Any number of distinct ids — all handled uniformly, no
    magic names. An action closes the window only if `spec.actions` marks it `closes: true`.
+   To keep the template generic, don't hardcode the id — reference an action by **name**
+   with `{{action.NAME}}`, and let the backend supply the real id:
+   `<button data-action="{{action.cta}}">{{text.cta}}</button>` with
+   `spec.actions: [{ name: "cta", id: "cta_click" }, …]`. (Unknown name → injection error.)
 
 Start from [`demo/templates/skeleton-template.js`](../demo/templates/skeleton-template.js);
 [`demo/templates/notification-template.js`](../demo/templates/notification-template.js) is a worked
@@ -89,7 +93,7 @@ const handle = showNotification(
     data: { programName: "WinZip", count: 12 },
     i18n: { en: {...}, uk: {...}, ru: {...} },
     lang: "en",
-    actions: [{ id: "cta_click" }, { id: "close_webview", closes: true }],
+    actions: [{ name: "cta", id: "cta_click" }, { name: "close", id: "close_webview", closes: true }],
     hideAfterMs: 8000,        // optional auto-hide
     on: {
       onReady: ({ lang, width, height }) => {},
@@ -115,7 +119,7 @@ For tests / non-Sciter hosts, call the core directly with your own adapters:
 - **New action**: add a `data-action="my_action"` element to the template and include
   `{ id: "my_action" }` in `spec.actions` (add `closes: true` to auto-close). It arrives
   in `on.onAction`. No controller change needed.
-- **New template token**: `{{t.KEY}}` / `{{d.FIELD}}` already cover localized + data values;
+- **New template token**: `{{text.KEY}}` / `{{data.FIELD}}` already cover localized + data values;
   add the key to `i18n` / `data`. New token *kinds* go in `core/inject.mjs`.
 - **New protocol method/message**: add it to `core/contract.mjs` (`TO_HOST` / `TO_TEMPLATE`),
   wire a `bridge.on(...)` in `core/notification.mjs`, and emit it from the template.

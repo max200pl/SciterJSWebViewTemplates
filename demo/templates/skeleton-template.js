@@ -5,7 +5,7 @@
 //   1. `{{styles}}` in <head> (host injects the required base CSS — the window sizes
 //      to content automatically; NO wrapper element needed);
 //   2. `{{client}}` once before </body> (host injects the bridge glue);
-//   3. host-bound text via {{t.key}} (localized) / {{d.field}} (raw data); {{lang}} on <html>;
+//   3. host-bound text via {{text.key}} (localized) / {{data.field}} (raw data); {{lang}} on <html>;
 //   4. `data-action="<id>"` (+ optional `data-href`) on clickable elements.
 //
 // Write your content straight into <body>. (Advanced: add `data-notify-root` to an
@@ -20,12 +20,12 @@ export const skeletonTemplate = `
     <!-- add your own content styles here -->
   </head>
   <body>
-    <!-- Build the notification here. Examples:
-         <h3>{{t.title}}</h3>
-         <p>{{t.subtitle}}</p>
-         <b>{{d.count}}</b>
-         <button data-action="cta_click">{{t.cta}}</button>
-         <button data-action="close_webview">{{t.close}}</button> -->
+    <!-- Your notification markup goes here. Bind values with tokens (do NOT write
+         token examples with real double-braces in comments — the injector resolves
+         them anyway). See bridge/README.md "Authoring a template":
+           text.KEY   = localized text       data.FIELD = raw data value
+           action.NAME = an action id, for data-action="...". E.g. a button is
+           <button data-action=" action.cta "> text.cta </button>  (drop the spaces, add braces) -->
 
     <!-- Bridge client (host-injected; do not edit). -->
     <script>{{client}}</script>

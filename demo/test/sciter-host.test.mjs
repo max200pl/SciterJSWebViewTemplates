@@ -85,15 +85,15 @@ test("bridge.loadHtml forwards to webview.loadHtml", () => {
   assert.deepEqual(wv.loaded, ["<b>x</b>"]);
 });
 
-test("windowCtl maps to Sciter Window calls", () => {
+test("windowCtl maps to Sciter Window calls (workarea in CSS px)", () => {
   const wv = mockWebView()._bind();
   const win = mockWindow();
   const { windowCtl } = makeSciterDeps(wv, win);
 
   assert.deepEqual(windowCtl.workarea(), [1920, 1080]);
-  assert.deepEqual(win.calls.at(-1), ["screenBox", "workarea", "dimension", true]);
+  assert.deepEqual(win.calls.at(-1), ["screenBox", "workarea", "dimension", false], "asPPX=false → CSS px");
 
-  windowCtl.move(1470, 660, 450, 420);
+  windowCtl.move(1470, 660, 450, 420); // no devicePixels → identity
   assert.deepEqual(win.calls.at(-1), ["move", 1470, 660, 450, 420]);
 
   windowCtl.show();
@@ -103,6 +103,14 @@ test("windowCtl maps to Sciter Window calls", () => {
   assert.deepEqual(win.calls.at(-1), ["close"]);
 });
 
+test("windowCtl.move converts CSS px -> physical px via devicePixels", () => {
+  const wv = mockWebView()._bind();
+  const win = mockWindow();
+  const { windowCtl } = makeSciterDeps(wv, win, (n) => n * 1.5); // e.g. 150% DPI
+  windowCtl.move(100, 200, 300, 400);
+  assert.deepEqual(win.calls.at(-1), ["move", 150, 300, 450, 600]);
+});
+
 test("showNotification wires the full path: ready+size -> injected load + show", async () => {
   const wv = mockWebView()._bind();
   const win = mockWindow();
@@ -110,7 +118,7 @@ test("showNotification wires the full path: ready+size -> injected load + show",
   showNotification(
     { elemWebView: wv, win },
     {
-      template: "<b>{{t.title}}</b>",
+      template: "<b>{{text.title}}</b>",
       i18n: { en: { title: "Hi" } },
       lang: "en",
       on: { onReady: (i) => events.push(i) },

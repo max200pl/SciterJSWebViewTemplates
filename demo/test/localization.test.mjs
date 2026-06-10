@@ -53,7 +53,7 @@ const noopScheduler = { setTimer: () => 1, clearTimer: () => {} };
 const count = (w, name) => w.calls.filter((c) => c[0] === name).length;
 
 const SPEC = {
-  template: "<h1>{{t.title}}</h1> c={{d.count}}",
+  template: "<h1>{{text.title}}</h1> c={{data.count}}",
   i18n: {
     en: { title: "Removed: {programName}" },
     uk: { title: "Видалено: {programName}" },

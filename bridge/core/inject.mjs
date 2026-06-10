@@ -6,9 +6,11 @@
 // (Step 4) which feeds the result to webview.loadHtml.
 //
 // Token convention in a template string:
-//   {{ t.KEY }}    -> i18n[lang][KEY] (fallback en, then KEY) with {field} data
+//   {{ text.KEY }}    -> i18n[lang][KEY] (fallback en, then KEY) with {field} data
 //                     interpolation applied, HTML-escaped.
-//   {{ d.FIELD }}  -> data[FIELD] (missing -> ""), HTML-escaped.
+//   {{ data.FIELD }}  -> data[FIELD] (missing -> ""), HTML-escaped.
+//   {{ action.NAME }}   -> id of the spec.actions entry named NAME (for data-action="..."),
+//                     HTML-escaped. Unknown name -> InjectionError.
 //   {{ lang }}     -> active language code, HTML-escaped.
 //   {{ actions }}  -> JSON array of declared action ids, escaped for a <script> context.
 //   {{ client }}   -> the bridge client JS (template-client), raw — inject inside a <script>.
@@ -19,7 +21,7 @@
 //   1. All injected values are escaped (HTML, or script-context for {{actions}}),
 //      closing the latent injection hazard from jsbridge.md §10.3.
 //   2. Replacement is a single left-to-right pass, so a data value that happens
-//      to look like a token (e.g. "{{d.x}}") is NOT re-processed.
+//      to look like a token (e.g. "{{data.x}}") is NOT re-processed.
 
 import { DEFAULTS, ERROR_STAGE } from "./contract.mjs";
 import { TEMPLATE_CLIENT, TEMPLATE_STYLES } from "./template-client.mjs";
@@ -104,6 +106,11 @@ export function injectTemplate(spec) {
   }
 
   const actionIds = actions.map((a) => (a && typeof a === "object" ? a.id : a));
+  // name -> id, so a template can reference an action's id by a stable name ({{action.cta}}).
+  const actionIdByName = {};
+  for (const a of actions) {
+    if (a && typeof a === "object" && a.name) actionIdByName[a.name] = a.id;
+  }
 
   return template.replace(/\{\{\s*([^{}]+?)\s*\}\}/g, (_match, tokenRaw) => {
     const token = tokenRaw.trim();
@@ -116,8 +123,16 @@ export function injectTemplate(spec) {
     const dotted = /^([a-z]+)\.(\w+)$/.exec(token);
     if (dotted) {
       const [, ns, key] = dotted;
-      if (ns === "t") return interpolate(translate(i18n, lang, key), data);
-      if (ns === "d") return escapeHtml(data[key] ?? "");
+      if (ns === "text") return interpolate(translate(i18n, lang, key), data);
+      if (ns === "data") return escapeHtml(data[key] ?? "");
+      if (ns === "action") {
+        // {{action.NAME}} -> the id of the spec.actions entry named NAME (backend-defined,
+        // so templates stay generic). Unknown name = structural mismatch -> fail loud.
+        if (!(key in actionIdByName)) {
+          throw new InjectionError(`{{action.${key}}}: no action named "${key}" in spec.actions`);
+        }
+        return escapeHtml(actionIdByName[key]);
+      }
     }
 
     throw new InjectionError(`unknown template token "{{${token}}}"`);

@@ -70,7 +70,7 @@ function mockScheduler() {
 }
 
 const SPEC = {
-  template: "<b>{{t.title}}</b>",
+  template: "<b>{{text.title}}</b>",
   i18n: { en: { title: "Hi" }, uk: { title: "Привіт" } },
   lang: "en",
 };

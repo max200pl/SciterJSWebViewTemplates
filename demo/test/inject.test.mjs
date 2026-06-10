@@ -63,9 +63,9 @@ test("interpolate substitutes {field}, blanks missing, escapes data", () => {
 
 // ---- injectTemplate: happy path --------------------------------------------
 
-test("injectTemplate resolves t / d / lang / actions tokens", () => {
+test("injectTemplate resolves text / data / lang / actions tokens", () => {
   const html = injectTemplate({
-    template: "<h1>{{t.title}}</h1> n={{d.count}} L={{lang}} A={{actions}}",
+    template: "<h1>{{text.title}}</h1> n={{data.count}} L={{lang}} A={{actions}}",
     data: { programName: "WinZip", count: 12 },
     i18n: { en: { title: "Removed: {programName}" } },
     lang: "en",
@@ -89,9 +89,22 @@ test("injectTemplate injects the required base CSS for {{styles}}", () => {
   assert.ok(html.includes("overflow: hidden"), "scrollbar guard present");
 });
 
+test("injectTemplate resolves {{action.NAME}} to the named action's id (escaped)", () => {
+  const html = injectTemplate({
+    template: '<button data-action="{{action.cta}}">x</button>',
+    actions: [{ name: "cta", id: "cta_click" }, { name: "close", id: "dismiss", closes: true }],
+  });
+  assert.equal(html, '<button data-action="cta_click">x</button>');
+});
+
+test("injectTemplate throws on {{action.NAME}} with an unknown action name", () => {
+  expectInjectionError(() => injectTemplate({ template: "{{action.ghost}}", actions: [{ name: "cta", id: "x" }] }));
+  expectInjectionError(() => injectTemplate({ template: "{{action.cta}}" })); // no actions at all
+});
+
 test("injectTemplate uses uk dict when lang=uk", () => {
   const html = injectTemplate({
-    template: "{{t.title}}",
+    template: "{{text.title}}",
     i18n: { en: { title: "Removed" }, uk: { title: "Видалено" } },
     lang: "uk",
   });
@@ -100,14 +113,14 @@ test("injectTemplate uses uk dict when lang=uk", () => {
 
 test("injectTemplate defaults lang to en", () => {
   const html = injectTemplate({
-    template: "{{t.title}}",
+    template: "{{text.title}}",
     i18n: { en: { title: "EN" }, uk: { title: "UK" } },
   });
   assert.equal(html, "EN");
 });
 
 test("injectTemplate soft-falls-back on a missing i18n key (no throw)", () => {
-  const html = injectTemplate({ template: "{{t.ghost}}", i18n: { en: {} }, lang: "en" });
+  const html = injectTemplate({ template: "{{text.ghost}}", i18n: { en: {} }, lang: "en" });
   assert.equal(html, "ghost");
 });
 
@@ -115,7 +128,7 @@ test("injectTemplate soft-falls-back on a missing i18n key (no throw)", () => {
 
 test("injectTemplate HTML-escapes interpolated data (no markup injection)", () => {
   const html = injectTemplate({
-    template: "<div>{{d.x}}</div>",
+    template: "<div>{{data.x}}</div>",
     data: { x: '<img src=x onerror="alert(1)">' },
   });
   assert.ok(html.includes("&lt;img"), "data must be escaped");
@@ -124,10 +137,10 @@ test("injectTemplate HTML-escapes interpolated data (no markup injection)", () =
 
 test("injectTemplate is single-pass (data cannot smuggle a token)", () => {
   const html = injectTemplate({
-    template: "{{d.a}}",
-    data: { a: "{{d.b}}", b: "SECRET" },
+    template: "{{data.a}}",
+    data: { a: "{{data.b}}", b: "SECRET" },
   });
-  assert.equal(html, "{{d.b}}"); // NOT "SECRET"
+  assert.equal(html, "{{data.b}}"); // NOT "SECRET"
 });
 
 test("injectTemplate leaves a token-free template unchanged", () => {

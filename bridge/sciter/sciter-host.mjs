@@ -18,10 +18,14 @@ import { createNotification } from "../core/notification.mjs";
  * Build {bridge, windowCtl, scheduler} for a Sciter host page.
  * @param {*} elemWebView - the `<webview>` element (has `.webview.loadHtml`, assignable `.jsBridgeCall`)
  * @param {*} win - the Sciter `Window` global (has `.this.move/close`, `.this.screenBox`, `.WINDOW_SHOWN`)
+ * @param {(n:number)=>number} [devicePixels] - CSS px -> physical px (from `@sciter`); window.move()
+ *   takes PPX. The bridge works in CSS px (matching the WebView's reported size); we convert here.
+ *   Defaults to identity (correct at 100% DPI / for Node tests).
  * @returns {{bridge: object, windowCtl: object, scheduler: object}}
  */
-export function makeSciterDeps(elemWebView, win) {
+export function makeSciterDeps(elemWebView, win, devicePixels) {
   const handlers = new Map();
+  const toPPX = typeof devicePixels === "function" ? (n) => devicePixels(n) : (n) => n;
 
   // B -> A: single array arg, params[0]=method, params[1]=payload.
   elemWebView.jsBridgeCall = (params) => {
@@ -57,10 +61,12 @@ export function makeSciterDeps(elemWebView, win) {
       win.this.close();
     },
     move(x, y, w, h) {
-      win.this.move(x, y, w, h);
+      // window.move() is in physical px (PPX); the bridge computed x/y/w/h in CSS px.
+      win.this.move(toPPX(x), toPPX(y), toPPX(w), toPPX(h));
     },
     workarea() {
-      const d = win.this.screenBox("workarea", "dimension", true);
+      // CSS px (asPPX=false) so it matches the WebView's CSS-px size; move() converts to PPX.
+      const d = win.this.screenBox("workarea", "dimension", false);
       return [d[0], d[1]];
     },
   };
@@ -79,10 +85,10 @@ export function makeSciterDeps(elemWebView, win) {
 
 /**
  * Convenience entry for a Sciter host page: wire adapters and show a notification.
- * @param {{elemWebView:*, win:*}} env
+ * @param {{elemWebView:*, win:*, devicePixels?:(n:number)=>number}} env
  * @param {import("./contract.mjs").NotificationSpec} spec
  * @returns {import("./contract.mjs").NotificationHandle}
  */
 export function showNotification(env, spec) {
-  return createNotification(makeSciterDeps(env.elemWebView, env.win), spec);
+  return createNotification(makeSciterDeps(env.elemWebView, env.win, env.devicePixels), spec);
 }

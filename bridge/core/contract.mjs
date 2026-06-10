@@ -89,6 +89,8 @@ export const DEFAULTS = Object.freeze({
  * An action the template may emit (declared so the host knows its effect).
  * @typedef {Object} NotificationAction
  * @property {string} id      - Identifier carried in `template:onAction` (e.g. "cta_click").
+ * @property {string} [name]  - Stable handle a template can reference via `{{action.NAME}}` to
+ *                              inject this action's `id` into `data-action` (keeps templates generic).
  * @property {boolean} [closes] - If true, activating it closes the window. The ONLY way an action closes.
  */
 

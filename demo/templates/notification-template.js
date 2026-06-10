@@ -1,12 +1,12 @@
 // Demo notification template — a worked example built on the skeleton contract
 // (see skeleton-template.js). Shows the minimal coupling in practice:
 //   - one `data-notify-root` element (window sizes to it),
-//   - host-bound text via {{t.*}} / {{d.*}},
+//   - host-bound text via {{text.*}} / {{data.*}},
 //   - `data-action` on buttons,
 //   - required base CSS via {{styles}} + bridge glue via {{client}} (NO hardcoded selectors here).
 //
-// Tokens consumed by injectTemplate: {{lang}} {{styles}} {{t.title}} {{t.subtitle}}
-// {{t.counter}} {{t.cta}} {{t.close}} {{d.count}} {{client}}.
+// Tokens consumed by injectTemplate: {{lang}} {{styles}} {{text.title}} {{text.subtitle}}
+// {{text.counter}} {{text.cta}} {{text.close}} {{data.count}} {{action.cta}} {{action.close}} {{client}}.
 
 export const notificationTemplate = `
 <html lang="{{lang}}">
@@ -27,12 +27,12 @@ export const notificationTemplate = `
   <body>
     <!-- content straight in <body> (no wrapper); body is shrink-to-fit via {{styles}} -->
     <div class="card">
-      <h3 class="title">{{t.title}}</h3>
-      <div class="badge"><span class="dot"></span><span>{{t.counter}}</span> <b>{{d.count}}</b></div>
-      <p class="subtitle">{{t.subtitle}}</p>
+      <h3 class="title">{{text.title}}</h3>
+      <div class="badge"><span class="dot"></span><span>{{text.counter}}</span> <b>{{data.count}}</b></div>
+      <p class="subtitle">{{text.subtitle}}</p>
       <div class="row">
-        <button data-action="cta_click">{{t.cta}}</button>
-        <button data-action="close_webview">{{t.close}}</button>
+        <button data-action="{{action.cta}}">{{text.cta}}</button>
+        <button data-action="{{action.close}}">{{text.close}}</button>
       </div>
     </div>
 

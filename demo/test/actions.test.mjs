@@ -54,7 +54,7 @@ async function shown(spec) {
   const handle = createNotification(
     { bridge, windowCtl, scheduler: noopScheduler },
     {
-      template: "<b>{{t.title}}</b>",
+      template: "<b>{{text.title}}</b>",
       i18n: { en: { title: "Hi" } },
       lang: "en",
       ...spec,

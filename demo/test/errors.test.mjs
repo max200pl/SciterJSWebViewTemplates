@@ -78,7 +78,7 @@ function harness({ spec = {}, windowThrow = {}, loadThrowAt = null, extraOn = {}
   };
   const handle = createNotification(
     { bridge, windowCtl, scheduler },
-    { template: "<b>{{t.title}}</b>", i18n: { en: { title: "Hi" } }, lang: "en", ...spec, on },
+    { template: "<b>{{text.title}}</b>", i18n: { en: { title: "Hi" } }, lang: "en", ...spec, on },
   );
   return { bridge, windowCtl, scheduler, errors, events, handle };
 }
@@ -154,7 +154,7 @@ test("a throwing onError never breaks the bridge", async () => {
 
 test("benign inputs do NOT error: empty data + missing i18n key", async () => {
   const h = harness({
-    spec: { template: "<b>{{t.title}}</b> c={{d.count}}", data: {}, i18n: { en: {} } },
+    spec: { template: "<b>{{text.title}}</b> c={{data.count}}", data: {}, i18n: { en: {} } },
   });
   await bringUp(h);
   assert.deepEqual(h.errors, [], "no errors for empty data / missing key (soft fallback)");

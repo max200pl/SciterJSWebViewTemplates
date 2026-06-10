@@ -24,6 +24,10 @@ const SPEC = {
     },
   },
   lang: "en",
+  actions: [
+    { name: "cta", id: "cta_click" },
+    { name: "close", id: "close_webview", closes: true },
+  ],
 };
 
 test("demo template is markup-only: no inline glue, base CSS + glue via tokens", () => {
@@ -33,7 +37,8 @@ test("demo template is markup-only: no inline glue, base CSS + glue via tokens",
   assert.ok(!notificationTemplate.includes("querySelector('.card')"), "no inline .card glue");
   assert.ok(!notificationTemplate.includes("window.jsBridgeCall"), "no inline bridge calls");
   assert.ok(!notificationTemplate.includes("data-notify-root"), "no wrapper element — content straight in <body>");
-  assert.ok(notificationTemplate.includes('data-action="cta_click"'), "actions via data-action");
+  assert.ok(notificationTemplate.includes('data-action="{{action.cta}}"'), "action ids come from the spec via {{action.NAME}}");
+  assert.ok(!notificationTemplate.includes('data-action="cta_click"'), "no hardcoded action id in the template");
 });
 
 test("demo template injects to clean HTML with base CSS + client + bound data", () => {
@@ -43,6 +48,7 @@ test("demo template injects to clean HTML with base CSS + client + bound data", 
   assert.ok(html.includes("Leftover files: 12"), "subtitle bound");
   assert.ok(html.includes('lang="en"'), "lang applied");
   assert.ok(html.includes("inline-block"), "base styles injected ({{styles}})");
+  assert.ok(html.includes('data-action="cta_click"'), "action id resolved from spec ({{action.cta}})");
   // {{client}} resolved -> the agnostic glue is now present
   assert.ok(html.includes("template:onReady") && html.includes("[data-notify-root]"), "client injected");
 });

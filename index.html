@@ -39,8 +39,6 @@
         behavior: webview library(sciter-webview);
       }
 
-      /* dev-only controls: absolute OVERLAY so they don't steal height from the
-         <webview> (otherwise the notification card gets clipped at the bottom). */
       .panel {
         flow: horizontal;
         gap: 6dip;
@@ -54,17 +52,26 @@
       }
     </style>
 
+    <script>
+      // Move the window OFF-SCREEN before expand() shows it. The window stays SHOWN (so
+      // WebView2 actually paints — a window-state="hidden" window never paints, you get a
+      // blank webview), but it's off the visible area, so the user sees nothing until the
+      // bridge moves it on-screen (bottom-right, exact size) on the first onSize.
+      // Runs synchronously at parse time, before main-window.cpp calls expand().
+      try {
+        Window.this.move(-32000, -32000, 100, 100);
+      } catch (e) {}
+    </script>
+
     <!--
-      Live host for the unified notification bridge (Step 9b).
-      Thin glue: build a NotificationSpec and hand it to the bridge. All logic lives
-      in ./bridge/* (see ./bridge/README.md). The legacy self-rendering demo is
-      preserved at ./index-legacy.html (loaded by Templates.js).
+      Live host for the unified notification bridge (Step 9b). Window is shown off-screen
+      at startup (script above); the bridge moves it on-screen bottom-right after render.
     -->
     <script type="module">
       // Single import-free bundle via absolute path. Sciter can't resolve relative
       // imports when the document path contains a space ("web-view-test 2") — its base
       // URL is malformed and "./x.js" stays literal. The bundle has no inner imports,
-      // so no relative resolution is needed (rebuild: `node bridge/build-bundle.mjs`).
+      // so no relative resolution is needed (rebuild: `node demo/build/build-bundle.mjs`).
       import {
         showNotification,
         notificationTemplate,
@@ -108,8 +115,11 @@
               close: "Закрыть",
             },
           },
-          actions: [{ id: "cta_click" }, { id: "close_webview", closes: true }],
-          // hideAfterMs: 8000,  // uncomment to demo auto-hide
+          actions: [
+            { name: "cta", id: "cta_click" },
+            { name: "close", id: "close_webview", closes: true },
+          ],
+          //hideAfterMs: 8000, // uncomment to demo auto-hide
         };
 
         // Spec = backend payload + LOCAL host callbacks (functions, not from the
@@ -167,7 +177,6 @@
 
   <body>
     <webview></webview>
-
     <div class="panel">
       <button #langEN>EN</button>
       <button #langUK>UK</button>
