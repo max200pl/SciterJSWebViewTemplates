@@ -7,7 +7,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { TEMPLATE_CLIENT } from "../bridge/template-client.js";
+import { TEMPLATE_CLIENT } from "../../bridge/core/template-client.mjs";
 
 test("client is pure, token-free JS (safe to paste or inject as-is)", () => {
   assert.equal(typeof TEMPLATE_CLIENT, "string");

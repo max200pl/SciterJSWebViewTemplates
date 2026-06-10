@@ -20,8 +20,8 @@
 //   2. Replacement is a single left-to-right pass, so a data value that happens
 //      to look like a token (e.g. "{{d.x}}") is NOT re-processed.
 
-import { DEFAULTS, ERROR_STAGE } from "./contract.js";
-import { TEMPLATE_CLIENT } from "./template-client.js";
+import { DEFAULTS, ERROR_STAGE } from "./contract.mjs";
+import { TEMPLATE_CLIENT } from "./template-client.mjs";
 
 /** Error raised by the injection layer. Maps to onError({ stage: "injection" }). */
 export class InjectionError extends Error {

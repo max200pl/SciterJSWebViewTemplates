@@ -12,8 +12,8 @@
 //   - an injection failure rejects WITHOUT loading anything (caller shows nothing).
 // This module never shows/positions the window — that is Step 5's job.
 
-import { injectTemplate } from "./inject.js";
-import { DEFAULTS } from "./contract.js";
+import { injectTemplate } from "./inject.mjs";
+import { DEFAULTS } from "./contract.mjs";
 
 /**
  * @typedef {Object} WebViewAdapter
@@ -25,7 +25,7 @@ import { DEFAULTS } from "./contract.js";
 /**
  * Inject the spec into HTML, load it, and resolve once the template reports ready.
  * @param {WebViewAdapter} adapter
- * @param {import("./contract.js").NotificationSpec} spec
+ * @param {import("./contract.mjs").NotificationSpec} spec
  * @returns {Promise<{lang: string}>} resolves when rendered (NOT shown)
  */
 export function renderNotification(adapter, spec) {

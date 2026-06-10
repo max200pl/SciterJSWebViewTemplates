@@ -6,8 +6,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { renderNotification } from "../bridge/render.js";
-import { InjectionError } from "../bridge/inject.js";
+import { renderNotification } from "../../bridge/core/render.mjs";
+import { InjectionError } from "../../bridge/core/inject.mjs";
 
 function mockAdapter() {
   const calls = [];

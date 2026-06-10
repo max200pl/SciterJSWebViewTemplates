@@ -6,18 +6,37 @@ originates in host JS; no C++ changes (the `NotificationSpec` data is plain JSON
 so a future C++ integration plugs into `makeSciterDeps` + `on.onAction` without
 touching the contract — see [the contract doc](../../.claude/docs/notification-bridge-contract.md)).
 
-## Modules
+## Layout
 
-| File | Role | Sciter-coupled? | Tested |
-| --- | --- | --- | --- |
-| `contract.js` | types (JSDoc) + frozen protocol enums | no | `test/contract.test.mjs` |
-| `inject.js` | `injectTemplate` — data/i18n/actions → HTML, auto-escaped | no | `test/inject.test.mjs` |
-| `render.js` | `renderNotification` — inject → load → wait-ready | no (adapter) | `test/render.test.mjs` |
-| `notification.js` | `createNotification` — show/hide lifecycle, actions, i18n, errors | no (adapters) | `test/notification,actions,localization,errors.test.mjs` |
-| `sciter-host.js` | `makeSciterDeps` / `showNotification` — the real Sciter adapters | **yes** | `test/sciter-host.test.mjs` (mocked) |
-| `template-client.js` | `TEMPLATE_CLIENT` — template-agnostic runtime-B glue (no selectors) | runtime B | `test/template-client.test.mjs` |
-| `skeleton-template.js` | `skeletonTemplate` — minimal build base for authors | runtime B | `test/notification-template.test.mjs` |
-| `notification-template.js` | worked demo built on the skeleton | runtime B | `test/notification-template.test.mjs` |
+This `bridge/` folder is **the deliverable** — copy it to the real app as-is. It is plain
+**`.mjs` source (ESM by extension)** with no `package.json`/manifest, so it drops into any
+app regardless of that app's module setup. Everything that is only scaffolding for this
+demo lives in a sibling `demo/` folder.
+
+```
+Templates/
+  bridge/          ── SHIPS to the real app (this folder; just .mjs, no manifest)
+    core/          portable bridge logic (no Sciter/C++)
+    sciter/        Sciter/C++ integration glue (the C++ boundary)
+    README.md
+  demo/            ── auxiliary, NOT shipped (specific to this test project)
+    templates/     DEMO templates — in production these arrive from the backend/C++ service
+    build/         build-bundle.mjs + generated bundle.js (the demo host loads it)
+    test/          the test suite
+    package.json   test runner ("npm test" runs from here)
+  index.html       demo host (pinned by C++ to this path)
+```
+
+| File | Role | Layer |
+| --- | --- | --- |
+| `bridge/core/contract.mjs` | types (JSDoc) + frozen protocol enums | ships |
+| `bridge/core/inject.mjs` | `injectTemplate` — data/i18n/actions/client → HTML, auto-escaped | ships |
+| `bridge/core/render.mjs` | `renderNotification` — inject → load → wait-ready | ships |
+| `bridge/core/notification.mjs` | `createNotification` — show/hide lifecycle, actions, i18n, errors | ships |
+| `bridge/core/template-client.mjs` | `TEMPLATE_CLIENT` — template-agnostic runtime-B glue (no selectors) | ships (runtime B) |
+| `bridge/sciter/sciter-host.mjs` | `makeSciterDeps` / `showNotification` — real Sciter adapters (**C++ boundary**) | ships (Sciter) |
+| `demo/templates/*.js` | `skeletonTemplate` (author base) + `notificationTemplate` (worked demo) | demo |
+| `demo/build/build-bundle.mjs` + `bundle.js` | generate / hold the import-free bundle | demo tooling |
 
 ## Authoring a template (external service)
 
@@ -28,7 +47,7 @@ specific class/markup**:
 
 1. One root element with `data-notify-root` — the window sizes to it (falls back to the
    first child of `<body>` if absent).
-2. `<script>{{client}}</script>` once — the host injects [`template-client.js`](./template-client.js)
+2. `<script>{{client}}</script>` once — the host injects [`core/template-client.mjs`](./core/template-client.mjs)
    (the bridge glue). Authors never write or maintain bridge code.
 3. Host-bound text: `{{t.key}}` (localized, from `spec.i18n`) and `{{d.field}}` (raw, from
    `spec.data`). `{{lang}}` for `<html lang>`. All auto-escaped.
@@ -36,20 +55,21 @@ specific class/markup**:
    `on.onAction({ id, data })`. Any number of distinct ids — all handled uniformly, no
    magic names. An action closes the window only if `spec.actions` marks it `closes: true`.
 
-Start from [`skeleton-template.js`](./skeleton-template.js); [`notification-template.js`](./notification-template.js)
-is a worked example. The client reports ready/size (incl. dynamic re-measure via
-ResizeObserver)/actions/errors automatically — no `document.querySelector` in author code.
+Start from [`demo/templates/skeleton-template.js`](../demo/templates/skeleton-template.js);
+[`demo/templates/notification-template.js`](../demo/templates/notification-template.js) is a worked
+example. The client reports ready/size (incl. dynamic re-measure via ResizeObserver)/
+actions/errors automatically — no `document.querySelector` in author code.
 
 ## Loading in Sciter (the bundle)
 
-`index.html` imports `bridge/bundle.js` — a generated, **import-free** concatenation of
-the modules above, loaded by absolute path. Sciter can't resolve relative module imports
-when the document path contains a space (`web-view-test 2`), so a single leaf file with no
-inner imports is the reliable way in. Source stays multi-file (for Node tests);
-**rebuild after any change**:
+`index.html` imports `demo/build/bundle.js` — a generated, **import-free** concatenation
+of `bridge/core` + `bridge/sciter` (ship) and `demo/templates`, loaded by absolute path.
+Sciter can't resolve relative module imports when the document path contains a space
+(`web-view-test 2`), so a single leaf file with no inner imports is the reliable way in.
+Source stays multi-file (for Node tests); **rebuild after any change**:
 
 ```
-node bridge/build-bundle.mjs
+node demo/build/build-bundle.mjs
 ```
 
 `test/bundle.test.mjs` fails if `bundle.js` is stale. (Node tests import the individual
@@ -58,7 +78,7 @@ modules directly, not the bundle.)
 ## Public API
 
 ```js
-import { showNotification } from "./bridge/sciter-host.js";
+import { showNotification } from "./bridge/sciter/sciter-host.mjs";
 
 const handle = showNotification(
   { elemWebView: document.$("webview"), win: Window },
@@ -86,7 +106,7 @@ handle.close();                // close (onClose reason "host")
 ```
 
 For tests / non-Sciter hosts, call the core directly with your own adapters:
-`createNotification({ bridge, windowCtl, scheduler }, spec)` (see `notification.js` typedefs).
+`createNotification({ bridge, windowCtl, scheduler }, spec)` (see `core/notification.mjs` typedefs).
 
 ## Extending
 
@@ -94,11 +114,11 @@ For tests / non-Sciter hosts, call the core directly with your own adapters:
   `{ id: "my_action" }` in `spec.actions` (add `closes: true` to auto-close). It arrives
   in `on.onAction`. No controller change needed.
 - **New template token**: `{{t.KEY}}` / `{{d.FIELD}}` already cover localized + data values;
-  add the key to `i18n` / `data`. New token *kinds* go in `inject.js`.
-- **New protocol method/message**: add it to `contract.js` (`TO_HOST` / `TO_TEMPLATE`),
-  wire a `bridge.on(...)` in `notification.js`, and emit it from the template.
+  add the key to `i18n` / `data`. New token *kinds* go in `core/inject.mjs`.
+- **New protocol method/message**: add it to `core/contract.mjs` (`TO_HOST` / `TO_TEMPLATE`),
+  wire a `bridge.on(...)` in `core/notification.mjs`, and emit it from the template.
 
 ## Tests
 
-`npm test` (from `Templates/`) — Node's built-in runner, zero dependencies. Manual QA:
+`npm test` (from `Templates/demo/`) — Node's built-in runner, zero dependencies. Manual QA:
 [../../.claude/docs/notification-qa-checklist.md](../../.claude/docs/notification-qa-checklist.md).

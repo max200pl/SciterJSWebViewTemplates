@@ -7,7 +7,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { createNotification } from "../bridge/notification.js";
+import { createNotification } from "../../bridge/core/notification.mjs";
 
 const tick = () => new Promise((r) => setTimeout(r, 0));
 

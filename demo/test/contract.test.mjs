@@ -10,10 +10,10 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-import { TO_HOST, TO_TEMPLATE, CLOSE_REASON, ERROR_STAGE, DEFAULTS } from "../bridge/contract.js";
+import { TO_HOST, TO_TEMPLATE, CLOSE_REASON, ERROR_STAGE, DEFAULTS } from "../../bridge/core/contract.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const liveHostSrc = readFileSync(join(HERE, "..", "index.html"), "utf8");
+const liveHostSrc = readFileSync(join(HERE, "..", "..", "index.html"), "utf8");
 
 // ---- contract enums internal validity --------------------------------------
 
@@ -53,7 +53,7 @@ test("DEFAULTS are sane", () => {
 // ---- live host page wires the bridge ---------------------------------------
 
 test("live index.html wires the bridge (bundle + showNotification)", () => {
-  assert.match(liveHostSrc, /bridge[\\/]+bundle\.js/, "imports the bridge bundle");
+  assert.match(liveHostSrc, /demo[\\/]+build[\\/]+bundle\.js/, "imports the demo bundle");
   assert.ok(liveHostSrc.includes("showNotification("), "calls showNotification");
   assert.ok(liveHostSrc.includes("notificationTemplate"), "uses the token template");
   assert.ok(!liveHostSrc.includes("window.__fromSciter("), "no legacy __fromSciter sender");

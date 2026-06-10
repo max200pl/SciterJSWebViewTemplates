@@ -1,17 +1,18 @@
 // Sciter host adapters — Step 9 (integration glue).
 //
-// The ONLY Sciter-coupled module: it builds the three adapters the lifecycle
-// controller (notification.js) needs out of a real `<webview>` element and the
-// Sciter `Window` global. Everything else in bridge/ is runtime-agnostic.
+// The ONLY Sciter/C++-coupled module (this is the C++ boundary): it builds the
+// three adapters the lifecycle controller (core/notification.js) needs out of a
+// real `<webview>` element and the Sciter `Window` global. Everything in core/ is
+// runtime-agnostic.
 //
 // The B->A wiring matters: Sciter's shim packs all jsBridgeCall arguments into a
 // single array, so the host handler receives ONE array param where
-// params[0]=method and params[1]=payload (see ../../.claude/docs/jsbridge.md §5).
+// params[0]=method and params[1]=payload (see ../../../.claude/docs/jsbridge.md §5).
 // makeSciterDeps installs that handler and fans methods out to registered
 // listeners — and because it is plain adapter construction, it is unit-testable
 // in Node with mock objects (see test/sciter-host.test.mjs).
 
-import { createNotification } from "./notification.js";
+import { createNotification } from "../core/notification.mjs";
 
 /**
  * Build {bridge, windowCtl, scheduler} for a Sciter host page.
@@ -79,8 +80,8 @@ export function makeSciterDeps(elemWebView, win) {
 /**
  * Convenience entry for a Sciter host page: wire adapters and show a notification.
  * @param {{elemWebView:*, win:*}} env
- * @param {import("./contract.js").NotificationSpec} spec
- * @returns {import("./contract.js").NotificationHandle}
+ * @param {import("./contract.mjs").NotificationSpec} spec
+ * @returns {import("./contract.mjs").NotificationHandle}
  */
 export function showNotification(env, spec) {
   return createNotification(makeSciterDeps(env.elemWebView, env.win), spec);

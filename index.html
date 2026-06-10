@@ -42,10 +42,7 @@
       /* dev-only controls: absolute OVERLAY so they don't steal height from the
          <webview> (otherwise the notification card gets clipped at the bottom). */
       .panel {
-        position: absolute;
-        top: 8dip;
-        right: 8dip;
-        flow: vertical;
+        flow: horizontal;
         gap: 6dip;
         background: #ffffffcc;
         padding: 8dip;
@@ -68,31 +65,63 @@
       // imports when the document path contains a space ("web-view-test 2") — its base
       // URL is malformed and "./x.js" stays literal. The bundle has no inner imports,
       // so no relative resolution is needed (rebuild: `node bridge/build-bundle.mjs`).
-      import { showNotification, notificationTemplate } from "C:\\____WORK____\\web-view-test 2\\Templates\\bridge\\bundle.js";
+      import {
+        showNotification,
+        notificationTemplate,
+      } from "C:\\____WORK____\\web-view-test 2\\Templates\\demo\\build\\bundle.js";
 
       document.on("ready", () => {
         const elemWebView = document.$("webview");
         let handle = null;
 
-        const spec = {
+        // ─────────────────────────────────────────────────────────────────────
+        // PAYLOAD FROM THE BACKEND SERVICE.
+        // Everything here is plain JSON (template + data + i18n + lang + actions +
+        // hideAfterMs) — exactly what arrives from the other service, and the shape
+        // a future C++ integration would deliver verbatim. Swap this object for the
+        // real backend response; nothing else below changes.
+        // ─────────────────────────────────────────────────────────────────────
+        const fromBackend = {
           template: notificationTemplate,
           lang: "en",
           data: { programName: "WinZip", count: 12 },
           i18n: {
-            en: { title: "Program removed: {programName}", subtitle: "Leftover files: {count}", counter: "Live counter", cta: "CTA", close: "Close" },
-            uk: { title: "Програму видалено: {programName}", subtitle: "Залишкових файлів: {count}", counter: "Лічильник", cta: "CTA", close: "Закрити" },
-            ru: { title: "Программа удалена: {programName}", subtitle: "Остаточных файлов: {count}", counter: "Счётчик", cta: "CTA", close: "Закрыть" },
+            en: {
+              title: "Program removed: {programName}",
+              subtitle: "Leftover files: {count}",
+              counter: "Live counter",
+              cta: "CTA",
+              close: "Close",
+            },
+            uk: {
+              title: "Програму видалено: {programName}",
+              subtitle: "Залишкових файлів: {count}",
+              counter: "Лічильник",
+              cta: "CTA",
+              close: "Закрити",
+            },
+            ru: {
+              title: "Программа удалена: {programName}",
+              subtitle: "Остаточных файлов: {count}",
+              counter: "Счётчик",
+              cta: "CTA",
+              close: "Закрыть",
+            },
           },
-          actions: [
-            { id: "cta_click" },
-            { id: "close_webview", closes: true },
-          ],
+          actions: [{ id: "cta_click" }, { id: "close_webview", closes: true }],
           // hideAfterMs: 8000,  // uncomment to demo auto-hide
+        };
+
+        // Spec = backend payload + LOCAL host callbacks (functions, not from the
+        // backend — this is where you'd forward events on to C++).
+        const spec = {
+          ...fromBackend,
           on: {
             onReady: (info) => console.log("bridge onReady", info),
             onAction: (ev) => console.log("bridge onAction", ev), // <- forward to C++ here if needed
             onClose: (reason) => console.log("bridge onClose", reason),
-            onLocalizationChanged: (c) => console.log("bridge onLocalizationChanged", c),
+            onLocalizationChanged: (c) =>
+              console.log("bridge onLocalizationChanged", c),
             onError: (err) => console.log("bridge onError", err),
           },
         };
@@ -110,15 +139,27 @@
         document.on("click", "#langEN", () => handle && handle.setLang("en"));
         document.on("click", "#langUK", () => handle && handle.setLang("uk"));
         document.on("click", "#langRU", () => handle && handle.setLang("ru"));
-        document.on("click", "#updatePayload", () =>
-          handle && handle.update({ programName: "Adobe Reader", count: 27 }),
+        document.on(
+          "click",
+          "#updatePayload",
+          () =>
+            handle && handle.update({ programName: "Adobe Reader", count: 27 }),
         );
-        document.on("click", "#updateI18n", () =>
-          handle &&
-          handle.setI18n({
-            en: { title: "🚀 EN from Sciter: {programName}", subtitle: "🧹 Files left: {count}" },
-            ru: { title: "🚀 RU from Sciter: {programName}", subtitle: "🧹 Осталось файлов: {count}" },
-          }),
+        document.on(
+          "click",
+          "#updateI18n",
+          () =>
+            handle &&
+            handle.setI18n({
+              en: {
+                title: "🚀 EN from Sciter: {programName}",
+                subtitle: "🧹 Files left: {count}",
+              },
+              ru: {
+                title: "🚀 RU from Sciter: {programName}",
+                subtitle: "🧹 Осталось файлов: {count}",
+              },
+            }),
         );
       });
     </script>

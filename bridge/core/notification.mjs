@@ -18,9 +18,9 @@
 //     on.onError (window-create / injection / render / callback / localization /
 //     auto-hide) and never throws out of the controller.
 
-import { renderNotification } from "./render.js";
-import { injectTemplate } from "./inject.js";
-import { CLOSE_REASON, DEFAULTS, ERROR_STAGE } from "./contract.js";
+import { renderNotification } from "./render.mjs";
+import { injectTemplate } from "./inject.mjs";
+import { CLOSE_REASON, DEFAULTS, ERROR_STAGE } from "./contract.mjs";
 
 /**
  * @typedef {Object} WindowCtl
@@ -50,8 +50,8 @@ const msg = (err) => String((err && err.message) || err);
 
 /**
  * @param {{bridge: BridgeTransport, windowCtl: WindowCtl, scheduler: Scheduler}} deps
- * @param {import("./contract.js").NotificationSpec} spec
- * @returns {import("./contract.js").NotificationHandle}
+ * @param {import("./contract.mjs").NotificationSpec} spec
+ * @returns {import("./contract.mjs").NotificationHandle}
  */
 export function createNotification(deps, spec) {
   const { bridge, windowCtl, scheduler } = deps;

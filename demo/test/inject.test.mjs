@@ -13,8 +13,8 @@ import {
   interpolate,
   injectTemplate,
   InjectionError,
-} from "../bridge/inject.js";
-import { ERROR_STAGE } from "../bridge/contract.js";
+} from "../../bridge/core/inject.mjs";
+import { ERROR_STAGE } from "../../bridge/core/contract.mjs";
 
 const LINE_SEP = String.fromCharCode(0x2028);
 const PARA_SEP = String.fromCharCode(0x2029);

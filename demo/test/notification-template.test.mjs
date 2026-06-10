@@ -7,9 +7,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { notificationTemplate } from "../bridge/notification-template.js";
-import { skeletonTemplate } from "../bridge/skeleton-template.js";
-import { injectTemplate } from "../bridge/inject.js";
+import { notificationTemplate } from "../templates/notification-template.js";
+import { skeletonTemplate } from "../templates/skeleton-template.js";
+import { injectTemplate } from "../../bridge/core/inject.mjs";
 
 const SPEC = {
   template: notificationTemplate,

@@ -11,14 +11,14 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-import { buildBundle } from "../bridge/build-bundle.mjs";
+import { buildBundle } from "../build/build-bundle.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const bundlePath = join(HERE, "..", "bridge", "bundle.js");
+const bundlePath = join(HERE, "..", "build", "bundle.js");
 
 test("committed bundle.js matches a fresh build (not stale)", () => {
   const onDisk = readFileSync(bundlePath, "utf8");
-  assert.equal(onDisk, buildBundle(), "bundle.js is stale — run `node bridge/build-bundle.mjs`");
+  assert.equal(onDisk, buildBundle(), "bundle.js is stale — run `node bridge/build/build-bundle.mjs`");
 });
 
 test("bundle.js has no leftover import statements (Sciter-safe)", () => {
@@ -27,7 +27,7 @@ test("bundle.js has no leftover import statements (Sciter-safe)", () => {
 });
 
 test("bundle exposes the public API and behaves end-to-end (mock Sciter env)", async () => {
-  const { showNotification, notificationTemplate } = await import("../bridge/bundle.js");
+  const { showNotification, notificationTemplate } = await import("../build/bundle.js");
   assert.equal(typeof showNotification, "function");
   assert.equal(typeof notificationTemplate, "string");
 

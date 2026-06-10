@@ -8,7 +8,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { makeSciterDeps, showNotification } from "../bridge/sciter-host.js";
+import { makeSciterDeps, showNotification } from "../../bridge/sciter/sciter-host.mjs";
 
 function mockWebView() {
   return {
