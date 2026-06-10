@@ -11,7 +11,8 @@
 //   {{ d.FIELD }}  -> data[FIELD] (missing -> ""), HTML-escaped.
 //   {{ lang }}     -> active language code, HTML-escaped.
 //   {{ actions }}  -> JSON array of declared action ids, escaped for a <script> context.
-//   {{ client }}   -> the bridge client JS (template-client.js), raw — inject inside a <script>.
+//   {{ client }}   -> the bridge client JS (template-client), raw — inject inside a <script>.
+//   {{ styles }}   -> the required base <style> (reset + data-notify-root sizing), raw — in <head>.
 //   anything else  -> InjectionError (fail loud: caller shows nothing — see plan Step 3 validation).
 //
 // Two safety properties:
@@ -21,7 +22,7 @@
 //      to look like a token (e.g. "{{d.x}}") is NOT re-processed.
 
 import { DEFAULTS, ERROR_STAGE } from "./contract.mjs";
-import { TEMPLATE_CLIENT } from "./template-client.mjs";
+import { TEMPLATE_CLIENT, TEMPLATE_STYLES } from "./template-client.mjs";
 
 /** Error raised by the injection layer. Maps to onError({ stage: "injection" }). */
 export class InjectionError extends Error {
@@ -110,6 +111,7 @@ export function injectTemplate(spec) {
     if (token === "lang") return escapeHtml(lang);
     if (token === "actions") return escapeJsonForScript(actionIds);
     if (token === "client") return TEMPLATE_CLIENT; // trusted bridge glue (raw)
+    if (token === "styles") return TEMPLATE_STYLES; // required base CSS (raw <style>)
 
     const dotted = /^([a-z]+)\.(\w+)$/.exec(token);
     if (dotted) {

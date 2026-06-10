@@ -26,31 +26,35 @@ const SPEC = {
   lang: "en",
 };
 
-test("demo template is markup-only: no inline glue, no hardcoded selector", () => {
-  // the bridge code is NOT in the source template — it arrives via {{client}}
+test("demo template is markup-only: no inline glue, base CSS + glue via tokens", () => {
+  // the bridge code/styles are NOT in the source template — they arrive via tokens
+  assert.ok(notificationTemplate.includes("{{styles}}"), "pulls required base CSS via token");
   assert.ok(notificationTemplate.includes("{{client}}"), "pulls the client via token");
   assert.ok(!notificationTemplate.includes("querySelector('.card')"), "no inline .card glue");
   assert.ok(!notificationTemplate.includes("window.jsBridgeCall"), "no inline bridge calls");
-  assert.ok(notificationTemplate.includes("data-notify-root"), "marks a sizing root");
+  assert.ok(!notificationTemplate.includes("data-notify-root"), "no wrapper element — content straight in <body>");
   assert.ok(notificationTemplate.includes('data-action="cta_click"'), "actions via data-action");
 });
 
-test("demo template injects to clean HTML with client + bound data", () => {
+test("demo template injects to clean HTML with base CSS + client + bound data", () => {
   const html = injectTemplate(SPEC);
   assert.ok(!/\{\{|\}\}/.test(html), "no leftover tokens");
   assert.ok(html.includes("Removed: WinZip"), "title bound");
   assert.ok(html.includes("Leftover files: 12"), "subtitle bound");
   assert.ok(html.includes('lang="en"'), "lang applied");
+  assert.ok(html.includes("inline-block"), "base styles injected ({{styles}})");
   // {{client}} resolved -> the agnostic glue is now present
   assert.ok(html.includes("template:onReady") && html.includes("[data-notify-root]"), "client injected");
 });
 
-test("skeleton is the minimal build base: root + client + token placeholders", () => {
-  assert.ok(skeletonTemplate.includes("data-notify-root"), "has sizing root");
+test("skeleton is the minimal build base: styles + client + tokens, no wrapper", () => {
+  assert.ok(!skeletonTemplate.includes("data-notify-root"), "no wrapper — content straight in <body>");
+  assert.ok(skeletonTemplate.includes("{{styles}}"), "pulls base CSS");
   assert.ok(skeletonTemplate.includes("{{client}}"), "pulls the client");
   assert.ok(skeletonTemplate.includes("{{lang}}"), "lang token");
   const html = injectTemplate({ template: skeletonTemplate, lang: "en" });
-  assert.ok(!/\{\{|\}\}/.test(html), "injects clean with just lang+client");
+  assert.ok(!/\{\{|\}\}/.test(html), "injects clean with just lang+styles+client");
+  assert.ok(html.includes("inline-block"), "base CSS present after injection");
   assert.ok(html.includes("template:onAction"), "client present after injection");
 });
 

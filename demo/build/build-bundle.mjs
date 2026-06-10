@@ -30,7 +30,7 @@ const ORDER = [
 ];
 
 // public API the host page imports from the bundle
-const PUBLIC_EXPORTS = ["showNotification", "notificationTemplate", "skeletonTemplate", "TEMPLATE_CLIENT"];
+const PUBLIC_EXPORTS = ["showNotification", "notificationTemplate", "skeletonTemplate", "TEMPLATE_CLIENT", "TEMPLATE_STYLES"];
 
 function stripModule(src) {
   return src

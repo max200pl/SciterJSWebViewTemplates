@@ -3,18 +3,18 @@
 //   - one `data-notify-root` element (window sizes to it),
 //   - host-bound text via {{t.*}} / {{d.*}},
 //   - `data-action` on buttons,
-//   - the bridge glue injected once via {{client}} (NO hardcoded selectors here).
+//   - required base CSS via {{styles}} + bridge glue via {{client}} (NO hardcoded selectors here).
 //
-// Tokens consumed by injectTemplate: {{lang}} {{t.title}} {{t.subtitle}} {{t.counter}}
-// {{t.cta}} {{t.close}} {{d.count}} {{client}}.
+// Tokens consumed by injectTemplate: {{lang}} {{styles}} {{t.title}} {{t.subtitle}}
+// {{t.counter}} {{t.cta}} {{t.close}} {{d.count}} {{client}}.
 
 export const notificationTemplate = `
 <html lang="{{lang}}">
   <head>
     <meta charset="utf-8" />
+    {{styles}}
     <style>
-      html, body { font-family: system-ui; background: transparent; color: black; margin: 0; padding: 0; overflow: hidden; }
-      [data-notify-root] { display: inline-block; }
+      html, body { font-family: system-ui; color: black; }
       .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; width: 450px; background: white; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box; }
       .row { display: flex; gap: 10px; flex-wrap: wrap; }
       button { padding: 10px 12px; border-radius: 10px; cursor: pointer; }
@@ -25,15 +25,14 @@ export const notificationTemplate = `
     </style>
   </head>
   <body>
-    <div data-notify-root>
-      <div class="card">
-        <h3 class="title">{{t.title}}</h3>
-        <div class="badge"><span class="dot"></span><span>{{t.counter}}</span> <b>{{d.count}}</b></div>
-        <p class="subtitle">{{t.subtitle}}</p>
-        <div class="row">
-          <button data-action="cta_click">{{t.cta}}</button>
-          <button data-action="close_webview">{{t.close}}</button>
-        </div>
+    <!-- content straight in <body> (no wrapper); body is shrink-to-fit via {{styles}} -->
+    <div class="card">
+      <h3 class="title">{{t.title}}</h3>
+      <div class="badge"><span class="dot"></span><span>{{t.counter}}</span> <b>{{d.count}}</b></div>
+      <p class="subtitle">{{t.subtitle}}</p>
+      <div class="row">
+        <button data-action="cta_click">{{t.cta}}</button>
+        <button data-action="close_webview">{{t.close}}</button>
       </div>
     </div>
 

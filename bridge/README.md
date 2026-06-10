@@ -45,8 +45,10 @@ Templates and their data arrive from another service; the host binds them with
 is **plain author HTML/CSS** plus a tiny, fixed contract — there is **no coupling to a
 specific class/markup**:
 
-1. One root element with `data-notify-root` — the window sizes to it (falls back to the
-   first child of `<body>` if absent).
+1. `{{styles}}` in `<head>` — the host injects the required base CSS. It makes `<body>`
+   shrink-to-fit so **the window auto-sizes to your content — no wrapper element needed**;
+   write your markup straight into `<body>`. (Advanced: add `data-notify-root` to an element
+   to size the window to *it* instead of the whole body.)
 2. `<script>{{client}}</script>` once — the host injects [`core/template-client.mjs`](./core/template-client.mjs)
    (the bridge glue). Authors never write or maintain bridge code.
 3. Host-bound text: `{{t.key}}` (localized, from `spec.i18n`) and `{{d.field}}` (raw, from

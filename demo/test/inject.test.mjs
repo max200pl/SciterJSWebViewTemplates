@@ -81,6 +81,14 @@ test("injectTemplate injects the template-agnostic client for {{client}}", () =>
   assert.ok(html.includes("[data-notify-root]") && html.includes("[data-action]"), "agnostic glue");
 });
 
+test("injectTemplate injects the required base CSS for {{styles}}", () => {
+  const html = injectTemplate({ template: "<head>{{styles}}</head>" });
+  assert.ok(!/\{\{styles\}\}/.test(html), "token replaced");
+  assert.ok(html.includes("<style>"), "emits a <style> block");
+  assert.ok(html.includes("[data-notify-root]") && html.includes("inline-block"), "sizing rule present");
+  assert.ok(html.includes("overflow: hidden"), "scrollbar guard present");
+});
+
 test("injectTemplate uses uk dict when lang=uk", () => {
   const html = injectTemplate({
     template: "{{t.title}}",

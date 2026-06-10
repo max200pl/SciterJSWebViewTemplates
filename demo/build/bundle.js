@@ -166,10 +166,26 @@ const DEFAULTS = Object.freeze({
 // Everything else (ready handshake, size reporting incl. dynamic re-measure via
 // ResizeObserver, error reporting) is automatic.
 
+// Base styles the bridge REQUIRES (host injects them via the {{styles}} token):
+//   - reset margins/padding + transparent bg so the window matches content exactly;
+//   - overflow:hidden to avoid sub-pixel rounding scrollbars;
+//   - <body> (and an optional [data-notify-root]) as inline-block so
+//     getBoundingClientRect == content size (a block <body> would stretch to the
+//     viewport width -> wrong window size). The author writes content straight into
+//     <body>; no wrapper element is needed.
+// Authors add their own content CSS separately; these can be overridden after.
+const TEMPLATE_STYLES = `<style>
+      html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
+      /* shrink-to-fit so the window sizes to content; author writes straight into <body>,
+         no wrapper needed. [data-notify-root] is an optional override element. */
+      body, [data-notify-root] { display: inline-block; }
+    </style>`;
+
 const TEMPLATE_CLIENT = `
 (function () {
   function root() {
-    return document.querySelector('[data-notify-root]') || document.body.firstElementChild || document.body;
+    // default: <body> (made shrink-to-fit by the base styles); optional override via [data-notify-root]
+    return document.querySelector('[data-notify-root]') || document.body;
   }
   function call(method, payload) {
     try { if (window.jsBridgeCall) return window.jsBridgeCall(method, payload); } catch (e) {}
@@ -221,7 +237,8 @@ const TEMPLATE_CLIENT = `
 //   {{ d.FIELD }}  -> data[FIELD] (missing -> ""), HTML-escaped.
 //   {{ lang }}     -> active language code, HTML-escaped.
 //   {{ actions }}  -> JSON array of declared action ids, escaped for a <script> context.
-//   {{ client }}   -> the bridge client JS (template-client.js), raw — inject inside a <script>.
+//   {{ client }}   -> the bridge client JS (template-client), raw — inject inside a <script>.
+//   {{ styles }}   -> the required base <style> (reset + data-notify-root sizing), raw — in <head>.
 //   anything else  -> InjectionError (fail loud: caller shows nothing — see plan Step 3 validation).
 //
 // Two safety properties:
@@ -318,6 +335,7 @@ function injectTemplate(spec) {
     if (token === "lang") return escapeHtml(lang);
     if (token === "actions") return escapeJsonForScript(actionIds);
     if (token === "client") return TEMPLATE_CLIENT; // trusted bridge glue (raw)
+    if (token === "styles") return TEMPLATE_STYLES; // required base CSS (raw <style>)
 
     const dotted = /^([a-z]+)\.(\w+)$/.exec(token);
     if (dotted) {
@@ -617,18 +635,18 @@ function createNotification(deps, spec) {
 //   - one `data-notify-root` element (window sizes to it),
 //   - host-bound text via {{t.*}} / {{d.*}},
 //   - `data-action` on buttons,
-//   - the bridge glue injected once via {{client}} (NO hardcoded selectors here).
+//   - required base CSS via {{styles}} + bridge glue via {{client}} (NO hardcoded selectors here).
 //
-// Tokens consumed by injectTemplate: {{lang}} {{t.title}} {{t.subtitle}} {{t.counter}}
-// {{t.cta}} {{t.close}} {{d.count}} {{client}}.
+// Tokens consumed by injectTemplate: {{lang}} {{styles}} {{t.title}} {{t.subtitle}}
+// {{t.counter}} {{t.cta}} {{t.close}} {{d.count}} {{client}}.
 
 const notificationTemplate = `
 <html lang="{{lang}}">
   <head>
     <meta charset="utf-8" />
+    {{styles}}
     <style>
-      html, body { font-family: system-ui; background: transparent; color: black; margin: 0; padding: 0; overflow: hidden; }
-      [data-notify-root] { display: inline-block; }
+      html, body { font-family: system-ui; color: black; }
       .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; width: 450px; background: white; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box; }
       .row { display: flex; gap: 10px; flex-wrap: wrap; }
       button { padding: 10px 12px; border-radius: 10px; cursor: pointer; }
@@ -639,15 +657,14 @@ const notificationTemplate = `
     </style>
   </head>
   <body>
-    <div data-notify-root>
-      <div class="card">
-        <h3 class="title">{{t.title}}</h3>
-        <div class="badge"><span class="dot"></span><span>{{t.counter}}</span> <b>{{d.count}}</b></div>
-        <p class="subtitle">{{t.subtitle}}</p>
-        <div class="row">
-          <button data-action="cta_click">{{t.cta}}</button>
-          <button data-action="close_webview">{{t.close}}</button>
-        </div>
+    <!-- content straight in <body> (no wrapper); body is shrink-to-fit via {{styles}} -->
+    <div class="card">
+      <h3 class="title">{{t.title}}</h3>
+      <div class="badge"><span class="dot"></span><span>{{t.counter}}</span> <b>{{d.count}}</b></div>
+      <p class="subtitle">{{t.subtitle}}</p>
+      <div class="row">
+        <button data-action="cta_click">{{t.cta}}</button>
+        <button data-action="close_webview">{{t.close}}</button>
       </div>
     </div>
 
@@ -661,32 +678,30 @@ const notificationTemplate = `
 // external service) copies and builds inside. Maximally simple, minimal coupling.
 //
 // The whole bridge contract for a template is just:
-//   1. one root element with `data-notify-root` (the window sizes to it);
-//   2. `{{client}}` once inside a <script> (the host injects the bridge glue);
-//   3. host-bound text via {{t.key}} (localized) or {{d.field}} (raw data);
+//   1. `{{styles}}` in <head> (host injects the required base CSS — the window sizes
+//      to content automatically; NO wrapper element needed);
+//   2. `{{client}}` once before </body> (host injects the bridge glue);
+//   3. host-bound text via {{t.key}} (localized) / {{d.field}} (raw data); {{lang}} on <html>;
 //   4. `data-action="<id>"` (+ optional `data-href`) on clickable elements.
 //
-// Everything else is the author's own HTML/CSS. The template + its data arrive
-// from the external service and the host injects them (see inject.js / README).
+// Write your content straight into <body>. (Advanced: add `data-notify-root` to an
+// element to size the window to it instead of the whole body.) Template + data arrive
+// from the external service and the host injects them (see inject.mjs / README).
 
 const skeletonTemplate = `
 <html lang="{{lang}}">
   <head>
     <meta charset="utf-8" />
-    <style>
-      html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
-      [data-notify-root] { display: inline-block; } /* size the window to content */
-    </style>
+    {{styles}}
+    <!-- add your own content styles here -->
   </head>
   <body>
-    <div data-notify-root>
-      <!-- Build the notification here. Examples:
-           <h3>{{t.title}}</h3>
-           <p>{{t.subtitle}}</p>
-           <b>{{d.count}}</b>
-           <button data-action="cta_click">{{t.cta}}</button>
-           <button data-action="close_webview">{{t.close}}</button> -->
-    </div>
+    <!-- Build the notification here. Examples:
+         <h3>{{t.title}}</h3>
+         <p>{{t.subtitle}}</p>
+         <b>{{d.count}}</b>
+         <button data-action="cta_click">{{t.cta}}</button>
+         <button data-action="close_webview">{{t.close}}</button> -->
 
     <!-- Bridge client (host-injected; do not edit). -->
     <script>{{client}}</script>
@@ -783,4 +798,4 @@ function showNotification(env, spec) {
   return createNotification(makeSciterDeps(env.elemWebView, env.win), spec);
 }
 
-export { showNotification, notificationTemplate, skeletonTemplate, TEMPLATE_CLIENT };
+export { showNotification, notificationTemplate, skeletonTemplate, TEMPLATE_CLIENT, TEMPLATE_STYLES };

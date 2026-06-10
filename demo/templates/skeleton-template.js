@@ -2,32 +2,30 @@
 // external service) copies and builds inside. Maximally simple, minimal coupling.
 //
 // The whole bridge contract for a template is just:
-//   1. one root element with `data-notify-root` (the window sizes to it);
-//   2. `{{client}}` once inside a <script> (the host injects the bridge glue);
-//   3. host-bound text via {{t.key}} (localized) or {{d.field}} (raw data);
+//   1. `{{styles}}` in <head> (host injects the required base CSS — the window sizes
+//      to content automatically; NO wrapper element needed);
+//   2. `{{client}}` once before </body> (host injects the bridge glue);
+//   3. host-bound text via {{t.key}} (localized) / {{d.field}} (raw data); {{lang}} on <html>;
 //   4. `data-action="<id>"` (+ optional `data-href`) on clickable elements.
 //
-// Everything else is the author's own HTML/CSS. The template + its data arrive
-// from the external service and the host injects them (see inject.js / README).
+// Write your content straight into <body>. (Advanced: add `data-notify-root` to an
+// element to size the window to it instead of the whole body.) Template + data arrive
+// from the external service and the host injects them (see inject.mjs / README).
 
 export const skeletonTemplate = `
 <html lang="{{lang}}">
   <head>
     <meta charset="utf-8" />
-    <style>
-      html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
-      [data-notify-root] { display: inline-block; } /* size the window to content */
-    </style>
+    {{styles}}
+    <!-- add your own content styles here -->
   </head>
   <body>
-    <div data-notify-root>
-      <!-- Build the notification here. Examples:
-           <h3>{{t.title}}</h3>
-           <p>{{t.subtitle}}</p>
-           <b>{{d.count}}</b>
-           <button data-action="cta_click">{{t.cta}}</button>
-           <button data-action="close_webview">{{t.close}}</button> -->
-    </div>
+    <!-- Build the notification here. Examples:
+         <h3>{{t.title}}</h3>
+         <p>{{t.subtitle}}</p>
+         <b>{{d.count}}</b>
+         <button data-action="cta_click">{{t.cta}}</button>
+         <button data-action="close_webview">{{t.close}}</button> -->
 
     <!-- Bridge client (host-injected; do not edit). -->
     <script>{{client}}</script>

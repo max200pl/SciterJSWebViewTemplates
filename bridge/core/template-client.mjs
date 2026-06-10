@@ -14,10 +14,26 @@
 // Everything else (ready handshake, size reporting incl. dynamic re-measure via
 // ResizeObserver, error reporting) is automatic.
 
+// Base styles the bridge REQUIRES (host injects them via the {{styles}} token):
+//   - reset margins/padding + transparent bg so the window matches content exactly;
+//   - overflow:hidden to avoid sub-pixel rounding scrollbars;
+//   - <body> (and an optional [data-notify-root]) as inline-block so
+//     getBoundingClientRect == content size (a block <body> would stretch to the
+//     viewport width -> wrong window size). The author writes content straight into
+//     <body>; no wrapper element is needed.
+// Authors add their own content CSS separately; these can be overridden after.
+export const TEMPLATE_STYLES = `<style>
+      html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
+      /* shrink-to-fit so the window sizes to content; author writes straight into <body>,
+         no wrapper needed. [data-notify-root] is an optional override element. */
+      body, [data-notify-root] { display: inline-block; }
+    </style>`;
+
 export const TEMPLATE_CLIENT = `
 (function () {
   function root() {
-    return document.querySelector('[data-notify-root]') || document.body.firstElementChild || document.body;
+    // default: <body> (made shrink-to-fit by the base styles); optional override via [data-notify-root]
+    return document.querySelector('[data-notify-root]') || document.body;
   }
   function call(method, payload) {
     try { if (window.jsBridgeCall) return window.jsBridgeCall(method, payload); } catch (e) {}
